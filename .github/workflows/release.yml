@@ -1,8 +1,6 @@
 name: Release
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       release_type:
@@ -14,24 +12,17 @@ on:
           - patch
           - minor
           - major
-          - prerelease
 
 permissions:
   contents: write
   packages: write
-  pull-requests: write
-  issues: write
+  id-token: write
 
 jobs:
   release:
     name: Release Packages
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[release]'))
     
-    outputs:
-      published: ${{ steps.changesets.outputs.published }}
-      publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,7 +40,6 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -60,66 +50,63 @@ jobs:
       - name: Run tests
         run: npx nx run-many --target=test --all --parallel=3
 
-      - name: Configure Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: Configure npm
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-          npm whoami
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Version packages (manual trigger)
-        if: github.event_name == 'workflow_dispatch'
+      - name: Bump versions
         run: |
-          npx lerna version ${{ github.event.inputs.release_type }} \
-            --yes \
-            --no-private \
-            --create-release github \
-            --message "chore(release): publish %s [skip ci]"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Bump version in all packages
+          for pkg in mcp/*/package.json packages/*/package.json; do
+            if [ -f "$pkg" ]; then
+              echo "Bumping version in $pkg"
+              cd $(dirname $pkg)
+              npm version ${{ github.event.inputs.release_type }} --no-git-tag-version
+              cd -
+            fi
+          done
 
-      - name: Publish to NPM
+      - name: Publish packages
         run: |
-          npx lerna publish from-package \
-            --yes \
-            --no-private \
-            --registry https://registry.npmjs.org/
+          # Publish shared package first
+          cd packages/shared
+          npm publish --access public
+          cd ../..
+          
+          # Publish MCP servers
+          for dir in mcp/*; do
+            if [ -d "$dir" ] && [ -f "$dir/package.json" ]; then
+              echo "Publishing $dir"
+              cd $dir
+              npm publish --access public
+              cd ../..
+            fi
+          done
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Create Git tag
+        run: |
+          VERSION=$(node -p "require('./mcp/rik/package.json').version")
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$VERSION" -m "Release v$VERSION"
+          git push origin "v$VERSION"
+
       - name: Create GitHub Release
-        if: github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: Release v${{ steps.version.outputs.version }}
+          tag_name: v${{ env.VERSION }}
+          name: Release v${{ env.VERSION }}
           body: |
-            ## 🚀 Release v${{ steps.version.outputs.version }}
+            ## 🚀 Release v${{ env.VERSION }}
             
             ### Packages Released:
             - @estonia-ai-kit/rik-mcp-server
             - @estonia-ai-kit/emta-mcp-server
             - @estonia-ai-kit/open-data-mcp-server
             - @estonia-ai-kit/shared
-            
-            See [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
           draft: false
-          prerelease: ${{ github.event.inputs.release_type == 'prerelease' }}
-
-  publish-success:
-    name: Publish Success Notification
-    runs-on: ubuntu-latest
-    needs: release
-    if: needs.release.outputs.published == 'true'
-
-    steps:
-      - name: Notify success
-        run: |
-          echo "✅ Successfully published packages to NPM!"
-          echo "Published: ${{ needs.release.outputs.publishedPackages }}"
+          prerelease: false

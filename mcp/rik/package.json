@@ -2,8 +2,34 @@
   "name": "@estonia-ai-kit/rik-mcp-server",
   "version": "1.0.0",
   "description": "MCP server for Estonian Business Register (RIK) API",
+  "private": false,
   "main": "dist/index.js",
   "type": "module",
+  "bin": {
+    "rik-mcp-server": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefanoamorelli/estonia-ai-kit.git",
+    "directory": "mcp/rik"
+  },
+  "keywords": [
+    "mcp",
+    "estonia",
+    "rik",
+    "business-register",
+    "ai",
+    "claude"
+  ],
   "author": {
     "name": "Stefano Amorelli",
     "email": "stefano@amorelli.tech",

@@ -2,9 +2,30 @@
   "name": "@estonia-ai-kit/shared",
   "version": "1.0.0",
   "description": "Shared utilities and types for Estonia AI Kit MCP servers",
+  "private": false,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefanoamorelli/estonia-ai-kit.git",
+    "directory": "packages/shared"
+  },
+  "keywords": [
+    "mcp",
+    "estonia",
+    "utilities",
+    "ai"
+  ],
   "author": {
     "name": "Stefano Amorelli",
     "email": "stefano@amorelli.tech",

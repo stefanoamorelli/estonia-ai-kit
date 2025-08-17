@@ -4,6 +4,7 @@
 
 Battle-tested utilities, type definitions, and X-Road client implementations used across all Estonia AI Kit packages.
 
+> [!NOTE]
 > Part of the [Estonia AI Kit](https://github.com/stefanoamorelli/estonia-ai-kit) monorepo - The Digital Nation's AI Toolkit
 
 ### What's Inside

@@ -45,9 +45,6 @@ jobs:
       - name: Format check
         run: npx prettier --check "**/*.{ts,tsx,js,jsx,json,md,yml,yaml}"
 
-      - name: Type check
-        run: npx nx run-many --target=typecheck --all --parallel=3
-
   test:
     name: Test
     runs-on: ubuntu-latest

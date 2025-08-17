@@ -4,6 +4,7 @@
 
 Connect AI assistants to Estonia's Business Register (Äriregister) for real-time company data, ownership structures, and financial reports.
 
+> [!NOTE]
 > Part of the [Estonia AI Kit](https://github.com/stefanoamorelli/estonia-ai-kit) monorepo - The Digital Nation's AI Toolkit
 
 ### What's Inside
