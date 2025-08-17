@@ -3,21 +3,21 @@
   # 🏰 Estonia AI Kit 🇪🇪
 <img width="1040" height="694" alt="image" src="https://github.com/user-attachments/assets/c2af2198-905a-421a-98f1-d26ccf0f1a6e" />
 
+<sup><a href="https://unsplash.com/photos/snow-covered-brown-white-and-gray-concrete-castle-under-cloudy-skies-2OSEWkQHiGI">Photo by Ilya Orehov on Unsplash</a></sup>
 
-  <sup><a href="https://unsplash.com/photos/snow-covered-brown-white-and-gray-concrete-castle-under-cloudy-skies-2OSEWkQHiGI">Photo by Ilya Orehov on Unsplash</a></sup>
-  
   <h3>🇪🇪 The Digital Nation's AI Toolkit</h3>
   <p>Build AI-powered applications with Estonia's world-leading digital infrastructure</p>
 
-  ![](https://badge.mcpx.dev?type=server&features=resources,tools 'MCP server with features')
-  [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-  [![Claude Desktop](https://img.shields.io/badge/Claude_Desktop-Ready-5E45CE?logo=anthropic&logoColor=white)](https://claude.ai)
-  [![VS Code](https://img.shields.io/badge/VS_Code-Compatible-0098FF?logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/)
-  [![X-Road](https://img.shields.io/badge/X--Road-Integrated-00b9a7)](https://x-tee.ee/en/)
-  [![Nx](https://img.shields.io/badge/Nx-Monorepo-143055?logo=nx&logoColor=white)](https://nx.dev)
-  [![Documentation](https://img.shields.io/badge/docs-modelcontextprotocol.io-blue.svg)](https://modelcontextprotocol.io)
-  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+![](https://badge.mcpx.dev?type=server&features=resources,tools 'MCP server with features')
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Claude Desktop](https://img.shields.io/badge/Claude_Desktop-Ready-5E45CE?logo=anthropic&logoColor=white)](https://claude.ai)
+[![VS Code](https://img.shields.io/badge/VS_Code-Compatible-0098FF?logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/)
+[![X-Road](https://img.shields.io/badge/X--Road-Integrated-00b9a7)](https://x-tee.ee/en/)
+[![Nx](https://img.shields.io/badge/Nx-Monorepo-143055?logo=nx&logoColor=white)](https://nx.dev)
+[![Documentation](https://img.shields.io/badge/docs-modelcontextprotocol.io-blue.svg)](https://modelcontextprotocol.io)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+
 </div>
 
 > [!NOTE]
@@ -49,47 +49,48 @@ Model Context Protocol (MCP) is an open protocol that standardizes how AI applic
 
 ### Architecture
 
-| Component | Tech Stack | Purpose |
-|-----------|------------|---------|
-| **MCP Servers** | TypeScript, @modelcontextprotocol/sdk | AI model integration with Estonian services |
-| **API Clients** | Axios, native fetch | HTTP/REST communication with government APIs |
-| **Caching** | node-cache | Response optimization and rate limit management |
-| **Type Safety** | TypeScript 5.9, strict mode | Full type coverage for all API responses |
-| **Shared Utilities** | Monorepo with Nx | Code reuse across MCP servers |
+| Component            | Tech Stack                            | Purpose                                         |
+| -------------------- | ------------------------------------- | ----------------------------------------------- |
+| **MCP Servers**      | TypeScript, @modelcontextprotocol/sdk | AI model integration with Estonian services     |
+| **API Clients**      | Axios, native fetch                   | HTTP/REST communication with government APIs    |
+| **Caching**          | node-cache                            | Response optimization and rate limit management |
+| **Type Safety**      | TypeScript 5.9, strict mode           | Full type coverage for all API responses        |
+| **Shared Utilities** | Monorepo with Nx                      | Code reuse across MCP servers                   |
 
 ### API Coverage
 
-| Service | Status | Endpoints | Rate Limit | Authentication | Cache TTL |
-|---------|--------|-----------|------------|----------------|----------|
-| **RIK Business Register** | ✅ Implemented | 15+ | 1000/hour | API Key | 24h |
-| **EMTA Tax Board** | ✅ Implemented | 8+ | 100/min | X-Road cert | 1h |
-| **Open Data Portal** | ✅ Implemented | 20+ | Unlimited | None | 6h |
-| **Population Register** | 🤝 PRs welcome | - | - | X-Road cert | - |
-| **Land Registry** | 🤝 PRs welcome | - | - | X-Road cert | - |
+| Service                   | Status         | Endpoints | Rate Limit | Authentication | Cache TTL |
+| ------------------------- | -------------- | --------- | ---------- | -------------- | --------- |
+| **RIK Business Register** | ✅ Implemented | 15+       | 1000/hour  | API Key        | 24h       |
+| **EMTA Tax Board**        | ✅ Implemented | 8+        | 100/min    | X-Road cert    | 1h        |
+| **Open Data Portal**      | ✅ Implemented | 20+       | Unlimited  | None           | 6h        |
+| **Population Register**   | 🤝 PRs welcome | -         | -          | X-Road cert    | -         |
+| **Land Registry**         | 🤝 PRs welcome | -         | -          | X-Road cert    | -         |
 
 ### Performance Targets
 
-| Metric | Target | Current |
-|--------|--------|---------|
-| MCP Handshake | < 10ms | ✅ 8ms |
-| API Response (p50) | < 200ms | ✅ 120ms |
-| API Response (p99) | < 500ms | ✅ 450ms |
-| Memory Usage | < 50MB | ✅ Met |
-| Bundle Size | < 100KB/server | ✅ Met |
-| Test Coverage | > 80% | ✅ 85% |
+| Metric             | Target         | Current  |
+| ------------------ | -------------- | -------- |
+| MCP Handshake      | < 10ms         | ✅ 8ms   |
+| API Response (p50) | < 200ms        | ✅ 120ms |
+| API Response (p99) | < 500ms        | ✅ 450ms |
+| Memory Usage       | < 50MB         | ✅ Met   |
+| Bundle Size        | < 100KB/server | ✅ Met   |
+| Test Coverage      | > 80%          | ✅ 85%   |
 
 ## 📦 Packages
 
-| Package | Description | NPM | Status |
-|---------|-------------|-----|--------|
-| [`@estonia-ai-kit/rik-mcp-server`](./mcp/rik) | Estonian Business Register API | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/rik-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/rik-mcp-server) | ✅ Ready |
-| [`@estonia-ai-kit/emta-mcp-server`](./mcp/emta) | Tax and Customs Board API | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/emta-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/emta-mcp-server) | ✅ Ready |
-| [`@estonia-ai-kit/open-data-mcp-server`](./mcp/open-data) | Open Data Portal API | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/open-data-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/open-data-mcp-server) | ✅ Ready |
-| [`@estonia-ai-kit/shared`](./packages/shared) | Shared utilities and types | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/shared)](https://www.npmjs.com/package/@estonia-ai-kit/shared) | ✅ Ready |
+| Package                                                   | Description                    | NPM                                                                                                                                             | Status   |
+| --------------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| [`@estonia-ai-kit/rik-mcp-server`](./mcp/rik)             | Estonian Business Register API | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/rik-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/rik-mcp-server)             | ✅ Ready |
+| [`@estonia-ai-kit/emta-mcp-server`](./mcp/emta)           | Tax and Customs Board API      | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/emta-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/emta-mcp-server)           | ✅ Ready |
+| [`@estonia-ai-kit/open-data-mcp-server`](./mcp/open-data) | Open Data Portal API           | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/open-data-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/open-data-mcp-server) | ✅ Ready |
+| [`@estonia-ai-kit/shared`](./packages/shared)             | Shared utilities and types     | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/shared)](https://www.npmjs.com/package/@estonia-ai-kit/shared)                             | ✅ Ready |
 
 ## 🛠️ Installation
 
 ### Using Bun (Recommended)
+
 ```bash
 bun add @estonia-ai-kit/rik-mcp-server
 bun add @estonia-ai-kit/emta-mcp-server
@@ -97,6 +98,7 @@ bun add @estonia-ai-kit/open-data-mcp-server
 ```
 
 ### Using npm
+
 ```bash
 npm install @estonia-ai-kit/rik-mcp-server
 npm install @estonia-ai-kit/emta-mcp-server
@@ -134,8 +136,8 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 import { RIKClient } from '@estonia-ai-kit/rik-mcp-server';
 
 const client = new RIKClient();
-const company = await client.searchCompany({ 
-  registryCode: '10000000' 
+const company = await client.searchCompany({
+  registryCode: '10000000',
 });
 ```
 
@@ -151,11 +153,13 @@ const company = await client.searchCompany({
 ## 🧑‍💻 Development
 
 ### Prerequisites
+
 - [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 - [![Bun](https://img.shields.io/badge/Bun-1.0+-000000?logo=bun&logoColor=white)](https://bun.sh/)
 - [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
 ### Setup
+
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/estonia-ai-kit.git
@@ -175,6 +179,7 @@ bun run dev
 ```
 
 ### Project Structure
+
 ```
 estonia-ai-kit/
 ├── mcp/                    # MCP server packages
@@ -212,7 +217,6 @@ npx nx test rik-mcp-server --watch
 # Run with coverage
 npx nx test rik-mcp-server --coverage
 ```
-
 
 ## 🤝 Contributing
 
