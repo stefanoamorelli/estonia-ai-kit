@@ -1,7 +1,7 @@
 <div align="center">
   
   # 🏰 Estonia AI Kit 🇪🇪
-  <img width="1469" height="980.5" alt="image" src="https://github.com/user-attachments/assets/c4829602-1463-4b2d-beca-c27ba7b253eb" />
+<img width="1040" height="694" alt="image" src="https://github.com/user-attachments/assets/c2af2198-905a-421a-98f1-d26ccf0f1a6e" />
 
 
   <sup><a href="https://unsplash.com/photos/snow-covered-brown-white-and-gray-concrete-castle-under-cloudy-skies-2OSEWkQHiGI">Photo by Ilya Orehov on Unsplash</a></sup>
