@@ -1,8 +1,9 @@
 <div align="center">
   
   # 🏰 Estonia AI Kit 🇪🇪
-  
-  <img src="https://images.unsplash.com/photo-1548175551-1faa36e960b4?q=80&w=2000&auto=format&fit=crop" alt="Estonia Castle" width="100%" style="max-width: 800px; border-radius: 10px; margin: 20px 0;">
+  <img width="1469" height="980.5" alt="image" src="https://github.com/user-attachments/assets/c4829602-1463-4b2d-beca-c27ba7b253eb" />
+
+
   <sup><a href="https://unsplash.com/photos/snow-covered-brown-white-and-gray-concrete-castle-under-cloudy-skies-2OSEWkQHiGI">Photo by Ilya Orehov on Unsplash</a></sup>
   
   <h3>🇪🇪 The Digital Nation's AI Toolkit</h3>
