@@ -70,10 +70,10 @@ jobs:
             const pr = context.payload.pull_request;
             const { additions, deletions, changed_files } = pr;
             const total_changes = additions + deletions;
-            
+
             let size_label = '';
             let comment = '';
-            
+
             if (total_changes < 10) {
               size_label = 'size/XS';
               comment = '✅ PR size is XS (< 10 lines)';
@@ -90,7 +90,7 @@ jobs:
               size_label = 'size/XL';
               comment = '❌ PR size is XL (> 1000 lines). Please break this into smaller PRs.';
             }
-            
+
             // Add size label
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
@@ -98,7 +98,7 @@ jobs:
               issue_number: pr.number,
               labels: [size_label]
             });
-            
+
             // Comment on PR
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -145,13 +145,13 @@ jobs:
         with:
           script: |
             const output = `## 📁 Changed Files Summary
-            
+
             - 📝 Documentation: ${{ steps.changed-files.outputs.docs_any_changed == 'true' && '✅' || '➖' }}
             - 💻 Source Code: ${{ steps.changed-files.outputs.source_any_changed == 'true' && '✅' || '➖' }}
             - 🧪 Tests: ${{ steps.changed-files.outputs.tests_any_changed == 'true' && '✅' || '➖' }}
             - ⚙️ Config: ${{ steps.changed-files.outputs.config_any_changed == 'true' && '✅' || '➖' }}
             `;
-            
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -170,7 +170,7 @@ jobs:
         with:
           script: |
             const pr = context.payload.pull_request;
-            
+
             // Auto-assign to PR author if not already assigned
             if (pr.assignees.length === 0) {
               await github.rest.issues.addAssignees({
@@ -180,7 +180,7 @@ jobs:
                 assignees: [pr.user.login]
               });
             }
-            
+
             // Add labels based on changed files
             const labels = [];
             const files = await github.rest.pulls.listFiles({
@@ -188,9 +188,9 @@ jobs:
               repo: context.repo.repo,
               pull_number: pr.number
             });
-            
+
             const fileNames = files.data.map(f => f.filename);
-            
+
             if (fileNames.some(f => f.includes('mcp/rik'))) labels.push('package: rik');
             if (fileNames.some(f => f.includes('mcp/emta'))) labels.push('package: emta');
             if (fileNames.some(f => f.includes('mcp/open-data'))) labels.push('package: open-data');
@@ -198,7 +198,7 @@ jobs:
             if (fileNames.some(f => f.includes('.github'))) labels.push('ci/cd');
             if (fileNames.some(f => f.endsWith('.md'))) labels.push('documentation');
             if (fileNames.some(f => f.includes('test') || f.includes('spec'))) labels.push('tests');
-            
+
             if (labels.length > 0) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,

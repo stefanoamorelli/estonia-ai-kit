@@ -45,11 +45,11 @@ jobs:
           # Create a new branch
           BRANCH_NAME="deps/update-$(date +%Y%m%d)"
           git checkout -b $BRANCH_NAME
-          
+
           # Update root dependencies
           echo "Updating root dependencies..."
           npx npm-check-updates -u --target minor
-          
+
           # Update workspace dependencies
           for dir in mcp/* packages/*; do
             if [ -f "$dir/package.json" ]; then
@@ -59,10 +59,10 @@ jobs:
               cd ../..
             fi
           done
-          
+
           # Install updated dependencies
           bun install
-          
+
           # Check if there are changes
           if git diff --quiet; then
             echo "No dependency updates available"
@@ -124,7 +124,7 @@ jobs:
               base: 'main',
               draft: false
             });
-            
+
             // Add labels
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
@@ -132,7 +132,7 @@ jobs:
               issue_number: pr.number,
               labels: ['dependencies', 'automated']
             });
-            
+
             // Add assignees
             await github.rest.issues.addAssignees({
               owner: context.repo.owner,
@@ -163,10 +163,10 @@ jobs:
         run: |
           echo "## Security Audit Report" > audit-report.md
           echo "" >> audit-report.md
-          
+
           # Run npm audit
           npm audit --json > audit.json || true
-          
+
           # Parse results
           if [ -s audit.json ]; then
             CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' audit.json)
@@ -194,7 +194,7 @@ jobs:
           script: |
             const fs = require('fs');
             const report = fs.readFileSync('audit-report.md', 'utf8');
-            
+
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -223,24 +223,24 @@ jobs:
       - name: Generate license report
         run: |
           npx license-checker --json --out licenses.json
-          
+
           echo "# License Report" > LICENSE-REPORT.md
           echo "" >> LICENSE-REPORT.md
           echo "Generated on $(date)" >> LICENSE-REPORT.md
           echo "" >> LICENSE-REPORT.md
           echo "## Summary" >> LICENSE-REPORT.md
-          
+
           # Count licenses by type
           echo "| License | Count |" >> LICENSE-REPORT.md
           echo "|---------|-------|" >> LICENSE-REPORT.md
-          
+
           jq -r 'to_entries | map(.value.licenses) | group_by(.) | map({license: .[0], count: length}) | sort_by(.count) | reverse | .[] | "| \(.license) | \(.count) |"' licenses.json >> LICENSE-REPORT.md || true
 
       - name: Check for incompatible licenses
         run: |
           # Check for GPL-incompatible licenses
           INCOMPATIBLE=$(jq -r 'to_entries | map(select(.value.licenses | test("GPL|LGPL|AGPL") | not)) | map(.key)' licenses.json)
-          
+
           if [ ! -z "$INCOMPATIBLE" ]; then
             echo "⚠️ Found potentially incompatible licenses"
             echo "$INCOMPATIBLE"

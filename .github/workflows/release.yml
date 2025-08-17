@@ -22,7 +22,7 @@ jobs:
   release:
     name: Release Packages
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -74,7 +74,7 @@ jobs:
           cd packages/shared
           npm publish --access public
           cd ../..
-          
+
           # Publish MCP servers
           for dir in mcp/*; do
             if [ -d "$dir" ] && [ -f "$dir/package.json" ]; then
@@ -102,7 +102,7 @@ jobs:
           name: Release v${{ env.VERSION }}
           body: |
             ## 🚀 Release v${{ env.VERSION }}
-            
+
             ### Packages Released:
             - @estonia-ai-kit/rik-mcp-server
             - @estonia-ai-kit/emta-mcp-server
