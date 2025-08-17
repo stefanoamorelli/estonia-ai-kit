@@ -56,11 +56,15 @@ export abstract class BaseMCPServer {
           content: [
             {
               type: 'text',
-              text: JSON.stringify({
-                error: 'Tool execution failed',
-                message: error instanceof Error ? error.message : 'Unknown error',
-                tool: name,
-              }, null, 2),
+              text: JSON.stringify(
+                {
+                  error: 'Tool execution failed',
+                  message: error instanceof Error ? error.message : 'Unknown error',
+                  tool: name,
+                },
+                null,
+                2
+              ),
             },
           ],
         };

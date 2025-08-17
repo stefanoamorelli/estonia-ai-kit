@@ -62,7 +62,7 @@ export class BaseAPIClient {
 
   protected async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const cacheKey = `GET:${url}:${JSON.stringify(config?.params || {})}`;
-    
+
     if (this.cache) {
       const cached = this.cache.get<T>(cacheKey);
       if (cached) {
@@ -71,7 +71,7 @@ export class BaseAPIClient {
     }
 
     const response = await this.client.get<T>(url, config);
-    
+
     if (this.cache) {
       this.cache.set(cacheKey, response.data);
     }
@@ -121,7 +121,11 @@ export class CacheManager {
   }
 }
 
-export function createErrorResponse(message: string, statusCode?: number, details?: any): ErrorResponse {
+export function createErrorResponse(
+  message: string,
+  statusCode?: number,
+  details?: any
+): ErrorResponse {
   return {
     error: 'API_ERROR',
     message,
@@ -130,7 +134,10 @@ export function createErrorResponse(message: string, statusCode?: number, detail
   };
 }
 
-export function createSuccessResponse<T>(data: T, metadata?: Record<string, any>): SuccessResponse<T> {
+export function createSuccessResponse<T>(
+  data: T,
+  metadata?: Record<string, any>
+): SuccessResponse<T> {
   return {
     success: true,
     data,
