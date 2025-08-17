@@ -1,10 +1,7 @@
 #!/usr/bin/env node
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import axios from 'axios';
 import NodeCache from 'node-cache';
 
@@ -261,58 +258,43 @@ class OpenDataMCPServer {
     }));
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      const { name, arguments: args } = request.params;
+      const { name, arguments: args = {} } = request.params;
 
       try {
         switch (name) {
           case 'search_datasets':
             return await this.searchDatasets(args as SearchParams);
-          
+
           case 'get_dataset':
             return await this.getDataset(args.datasetId as string);
-          
+
           case 'list_organizations':
             return await this.listOrganizations(args.includeCount as boolean);
-          
+
           case 'list_tags':
-            return await this.listTags(
-              args.popular as boolean,
-              args.limit as number
-            );
-          
+            return await this.listTags(args.popular as boolean, args.limit as number);
+
           case 'get_dataset_statistics':
             return await this.getDatasetStatistics();
-          
+
           case 'get_resource':
-            return await this.getResource(
-              args.datasetId as string,
-              args.resourceId as string
-            );
-          
+            return await this.getResource(args.datasetId as string, args.resourceId as string);
+
           case 'search_geo_datasets':
-            return await this.searchGeoDatasets(
-              args.region as string,
-              args.dataType as string
-            );
-          
+            return await this.searchGeoDatasets(args.region as string, args.dataType as string);
+
           case 'get_latest_datasets':
-            return await this.getLatestDatasets(
-              args.limit as number,
-              args.filterBy as string
-            );
-          
+            return await this.getLatestDatasets(args.limit as number, args.filterBy as string);
+
           case 'search_business_data':
-            return await this.searchBusinessData(
-              args.category as string,
-              args.year as number
-            );
-          
+            return await this.searchBusinessData(args.category as string, args.year as number);
+
           case 'search_environmental_data':
             return await this.searchEnvironmentalData(
               args.category as string,
               args.region as string
             );
-          
+
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
@@ -454,7 +436,8 @@ class OpenDataMCPServer {
     const mockData: Dataset = {
       id: datasetId,
       title: 'Estonian Administrative and Settlement Division',
-      description: 'Complete dataset of Estonian administrative units including counties, municipalities, settlements, and addresses',
+      description:
+        'Complete dataset of Estonian administrative units including counties, municipalities, settlements, and addresses',
       organization: 'Land Board',
       tags: ['geography', 'administrative', 'boundaries', 'addresses'],
       format: ['GeoJSON', 'Shapefile', 'CSV', 'KML'],
@@ -521,9 +504,7 @@ class OpenDataMCPServer {
       { name: 'Estonian Meteorological and Hydrological Institute', datasetCount: 76 },
     ];
 
-    const result = includeCount
-      ? organizations
-      : organizations.map(org => ({ name: org.name }));
+    const result = includeCount ? organizations : organizations.map((org) => ({ name: org.name }));
 
     cache.set(cacheKey, result);
 
@@ -531,10 +512,14 @@ class OpenDataMCPServer {
       content: [
         {
           type: 'text',
-          text: JSON.stringify({
-            totalOrganizations: organizations.length,
-            organizations: result,
-          }, null, 2),
+          text: JSON.stringify(
+            {
+              totalOrganizations: organizations.length,
+              organizations: result,
+            },
+            null,
+            2
+          ),
         },
       ],
     };
@@ -559,18 +544,20 @@ class OpenDataMCPServer {
       { name: 'culture', count: 41 },
     ];
 
-    const tags = popular
-      ? allTags.filter(tag => tag.count > 100)
-      : allTags;
+    const tags = popular ? allTags.filter((tag) => tag.count > 100) : allTags;
 
     return {
       content: [
         {
           type: 'text',
-          text: JSON.stringify({
-            totalTags: tags.length,
-            tags: tags.slice(0, limit),
-          }, null, 2),
+          text: JSON.stringify(
+            {
+              totalTags: tags.length,
+              tags: tags.slice(0, limit),
+            },
+            null,
+            2
+          ),
         },
       ],
     };
@@ -584,23 +571,23 @@ class OpenDataMCPServer {
         'Land Board': 156,
         'Environmental Board': 89,
         'Centre of Registers and Information Systems': 45,
-        'Others': 723,
+        Others: 723,
       },
       byFormat: {
-        'CSV': 892,
-        'JSON': 634,
-        'XML': 412,
-        'GeoJSON': 189,
-        'PDF': 156,
-        'Excel': 134,
-        'Shapefile': 98,
+        CSV: 892,
+        JSON: 634,
+        XML: 412,
+        GeoJSON: 189,
+        PDF: 156,
+        Excel: 134,
+        Shapefile: 98,
       },
       byTag: {
-        'statistics': 342,
-        'geography': 256,
-        'business': 189,
-        'environment': 167,
-        'population': 145,
+        statistics: 342,
+        geography: 256,
+        business: 189,
+        environment: 167,
+        population: 145,
       },
       lastUpdated: new Date().toISOString(),
     };
@@ -630,16 +617,20 @@ class OpenDataMCPServer {
       content: [
         {
           type: 'text',
-          text: JSON.stringify({
-            datasetId,
-            resource,
-            downloadUrl: resource.url,
-            metadata: {
-              format: resource.format,
-              size: resource.size,
-              lastModified: resource.lastModified,
+          text: JSON.stringify(
+            {
+              datasetId,
+              resource,
+              downloadUrl: resource.url,
+              metadata: {
+                format: resource.format,
+                size: resource.size,
+                lastModified: resource.lastModified,
+              },
             },
-          }, null, 2),
+            null,
+            2
+          ),
         },
       ],
     };
@@ -673,7 +664,7 @@ class OpenDataMCPServer {
       },
     ];
 
-    const filtered = datasets.filter(d => {
+    const filtered = datasets.filter((d) => {
       if (dataType && d.dataType !== dataType) return false;
       if (region && !d.region.includes(region.toLowerCase())) return false;
       return true;
@@ -683,11 +674,15 @@ class OpenDataMCPServer {
       content: [
         {
           type: 'text',
-          text: JSON.stringify({
-            query: { region, dataType },
-            count: filtered.length,
-            datasets: filtered,
-          }, null, 2),
+          text: JSON.stringify(
+            {
+              query: { region, dataType },
+              count: filtered.length,
+              datasets: filtered,
+            },
+            null,
+            2
+          ),
         },
       ],
     };
@@ -722,11 +717,15 @@ class OpenDataMCPServer {
       content: [
         {
           type: 'text',
-          text: JSON.stringify({
-            filterBy,
-            limit,
-            datasets: datasets.slice(0, limit),
-          }, null, 2),
+          text: JSON.stringify(
+            {
+              filterBy,
+              limit,
+              datasets: datasets.slice(0, limit),
+            },
+            null,
+            2
+          ),
         },
       ],
     };
@@ -760,7 +759,7 @@ class OpenDataMCPServer {
       },
     ];
 
-    const filtered = datasets.filter(d => {
+    const filtered = datasets.filter((d) => {
       if (category && d.category !== category) return false;
       if (year && d.year !== year) return false;
       return true;
@@ -770,11 +769,15 @@ class OpenDataMCPServer {
       content: [
         {
           type: 'text',
-          text: JSON.stringify({
-            query: { category, year },
-            count: filtered.length,
-            datasets: filtered,
-          }, null, 2),
+          text: JSON.stringify(
+            {
+              query: { category, year },
+              count: filtered.length,
+              datasets: filtered,
+            },
+            null,
+            2
+          ),
         },
       ],
     };
@@ -808,7 +811,7 @@ class OpenDataMCPServer {
       },
     ];
 
-    const filtered = datasets.filter(d => {
+    const filtered = datasets.filter((d) => {
       if (category && d.category !== category) return false;
       if (region && !d.region.toLowerCase().includes(region.toLowerCase())) return false;
       return true;
@@ -818,11 +821,15 @@ class OpenDataMCPServer {
       content: [
         {
           type: 'text',
-          text: JSON.stringify({
-            query: { category, region },
-            count: filtered.length,
-            datasets: filtered,
-          }, null, 2),
+          text: JSON.stringify(
+            {
+              query: { category, region },
+              count: filtered.length,
+              datasets: filtered,
+            },
+            null,
+            2
+          ),
         },
       ],
     };

@@ -9,14 +9,14 @@ Access 2,000+ government datasets through Estonia's Open Data Portal API with bu
 
 ### Dataset Coverage
 
-| Category | Datasets | Formats | Update Freq |
-|----------|----------|---------|-------------|
-| Demographics | 450+ | CSV, JSON, XML | Monthly |
-| Economics | 380+ | CSV, XLSX, API | Daily/Weekly |
-| Environment | 290+ | GeoJSON, SHP | Real-time |
-| Transport | 180+ | GTFS, JSON | Real-time |
-| Health | 220+ | CSV, JSON | Weekly |
-| Education | 150+ | CSV, XLSX | Yearly |
+| Category     | Datasets | Formats        | Update Freq  |
+| ------------ | -------- | -------------- | ------------ |
+| Demographics | 450+     | CSV, JSON, XML | Monthly      |
+| Economics    | 380+     | CSV, XLSX, API | Daily/Weekly |
+| Environment  | 290+     | GeoJSON, SHP   | Real-time    |
+| Transport    | 180+     | GTFS, JSON     | Real-time    |
+| Health       | 220+     | CSV, JSON      | Weekly       |
+| Education    | 150+     | CSV, XLSX      | Yearly       |
 
 ### Quick Start
 
@@ -46,24 +46,20 @@ interface DataTools {
     format?: Format;
     organization?: string;
   }): Dataset[];
-  
+
   // Data Access
   getDataset(id: string): DatasetMetadata;
-  
+
   streamData(params: {
     datasetId: string;
     format?: 'csv' | 'json' | 'parquet';
     filters?: Record<string, any>;
     limit?: number;
   }): AsyncIterator<DataChunk>;
-  
+
   // Analytics
   getStatistics(datasetId: string): DatasetStats;
-  getTimeSeries(params: {
-    datasetId: string;
-    metric: string;
-    period: Period;
-  }): TimeSeriesData;
+  getTimeSeries(params: { datasetId: string; metric: string; period: Period }): TimeSeriesData;
 }
 ```
 
@@ -74,34 +70,34 @@ const optimizations = {
   streaming: {
     chunk_size: '10MB',
     backpressure: true,
-    parallel_downloads: 4
+    parallel_downloads: 4,
   },
   caching: {
     strategy: 'LRU',
     max_size: '500MB',
-    ttl: '6 hours'
+    ttl: '6 hours',
   },
   compression: {
     gzip: true,
     brotli: true,
-    ratio: '10:1 avg'
+    ratio: '10:1 avg',
   },
   formats: {
     auto_convert: true,
-    supported: ['csv', 'json', 'parquet', 'arrow']
-  }
+    supported: ['csv', 'json', 'parquet', 'arrow'],
+  },
 };
 ```
 
 ### Popular Datasets
 
-| Dataset | Records | Use Case |
-|---------|---------|----------|
-| Population Register | 1.3M | Demographics analysis |
-| Business Register | 300K | Market research |
-| Real Estate Transactions | 500K/year | Property analytics |
-| Traffic Flow | Real-time | Transport planning |
-| Air Quality | 24/7 monitoring | Environmental studies |
+| Dataset                  | Records         | Use Case              |
+| ------------------------ | --------------- | --------------------- |
+| Population Register      | 1.3M            | Demographics analysis |
+| Business Register        | 300K            | Market research       |
+| Real Estate Transactions | 500K/year       | Property analytics    |
+| Traffic Flow             | Real-time       | Transport planning    |
+| Air Quality              | 24/7 monitoring | Environmental studies |
 
 ### API Endpoints
 
