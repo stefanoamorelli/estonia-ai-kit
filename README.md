@@ -1,3 +1,5 @@
+[![MSeeP.ai Security Assessment Badge](https://mseep.net/pr/stefanoamorelli-estonia-ai-kit-badge.png)](https://mseep.ai/app/stefanoamorelli-estonia-ai-kit)
+
 <div align="center">
   
   # 🏰 Estonia AI Kit 🇪🇪
