@@ -1,6 +1,6 @@
 {
   "name": "@estonia-ai-kit/shared",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shared utilities and types for Estonia AI Kit MCP servers",
   "private": false,
   "main": "dist/index.js",

@@ -1,6 +1,6 @@
 {
   "name": "@estonia-ai-kit/open-data-mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for Estonian Open Data Portal (andmed.eesti.ee)",
   "private": false,
   "main": "dist/index.js",

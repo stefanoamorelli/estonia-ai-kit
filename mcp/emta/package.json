@@ -1,6 +1,6 @@
 {
   "name": "@estonia-ai-kit/emta-mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for Estonian Tax and Customs Board (EMTA) API via X-Road",
   "private": false,
   "main": "dist/index.js",
