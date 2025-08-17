@@ -133,7 +133,7 @@ For commercial licensing options or other licensing inquiries, please contact **
     Released under the GNU Affero General Public License v3.0<br>
     <a href="https://amorelli.tech">amorelli.tech</a> • <a href="mailto:stefano@amorelli.tech">stefano@amorelli.tech</a><br>
     <br>
-    Made with ❤️ for Estonia's digital future 🇪🇪<br>
+    Made with ❤️ in Tallinn for Estonia's digital future 🇪🇪<br>
     Enjoy! 🎉
   </p>
 </div>
