@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Amorelli"
+    given-names: "Stefano"
+    orcid: "https://orcid.org/0009-0004-4917-0999"
+title: "EMTA MCP Server - Estonian Tax and Customs Board API"
+version: 1.0.0
+date-released: 2025-01-17
+url: "https://github.com/stefanoamorelli/estonia-ai-kit/tree/main/mcp/emta"
+repository-code: "https://github.com/stefanoamorelli/estonia-ai-kit"
+license: AGPL-3.0
+keywords:
+  - estonia
+  - tax-api
+  - customs
+  - mcp
+  - ai
+  - vat
+  - x-road
+  - emta
+abstract: "MCP server for accessing Estonian Tax and Customs Board (EMTA) services via X-Road, including VAT validation, tax debt checking, employment registrations, and customs declarations."

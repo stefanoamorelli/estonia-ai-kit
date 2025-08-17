@@ -1,0 +1,209 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  statuses: write
+
+jobs:
+  validate-pr:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          scopes: |
+            rik
+            emta
+            open-data
+            shared
+            mcp
+            deps
+            release
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject "{subject}" found in the pull request title "{title}"
+            didn't match the configured pattern. Please ensure that the subject
+            doesn't start with an uppercase character.
+
+  check-size:
+    name: Check PR Size
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR size
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const { additions, deletions, changed_files } = pr;
+            const total_changes = additions + deletions;
+            
+            let size_label = '';
+            let comment = '';
+            
+            if (total_changes < 10) {
+              size_label = 'size/XS';
+              comment = '✅ PR size is XS (< 10 lines)';
+            } else if (total_changes < 100) {
+              size_label = 'size/S';
+              comment = '✅ PR size is S (< 100 lines)';
+            } else if (total_changes < 500) {
+              size_label = 'size/M';
+              comment = '⚠️ PR size is M (< 500 lines)';
+            } else if (total_changes < 1000) {
+              size_label = 'size/L';
+              comment = '⚠️ PR size is L (< 1000 lines). Consider breaking it down.';
+            } else {
+              size_label = 'size/XL';
+              comment = '❌ PR size is XL (> 1000 lines). Please break this into smaller PRs.';
+            }
+            
+            // Add size label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: [size_label]
+            });
+            
+            // Comment on PR
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body: `## PR Size Analysis\n\n${comment}\n\n📊 **Stats:**\n- Files changed: ${changed_files}\n- Lines added: ${additions}\n- Lines deleted: ${deletions}\n- Total changes: ${total_changes}`
+            });
+
+  check-files:
+    name: Check Changed Files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files_yaml: |
+            docs:
+              - '**/*.md'
+              - 'docs/**'
+            source:
+              - 'packages/**/*.ts'
+              - 'mcp/**/*.ts'
+              - '!**/*.test.ts'
+              - '!**/*.spec.ts'
+            tests:
+              - '**/*.test.ts'
+              - '**/*.spec.ts'
+            config:
+              - 'package.json'
+              - 'tsconfig*.json'
+              - 'nx.json'
+              - '.github/**'
+
+      - name: Comment file changes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `## 📁 Changed Files Summary
+            
+            - 📝 Documentation: ${{ steps.changed-files.outputs.docs_any_changed == 'true' && '✅' || '➖' }}
+            - 💻 Source Code: ${{ steps.changed-files.outputs.source_any_changed == 'true' && '✅' || '➖' }}
+            - 🧪 Tests: ${{ steps.changed-files.outputs.tests_any_changed == 'true' && '✅' || '➖' }}
+            - ⚙️ Config: ${{ steps.changed-files.outputs.config_any_changed == 'true' && '✅' || '➖' }}
+            `;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: output
+            });
+
+  auto-assign:
+    name: Auto Assign
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Auto-assign PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            
+            // Auto-assign to PR author if not already assigned
+            if (pr.assignees.length === 0) {
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                assignees: [pr.user.login]
+              });
+            }
+            
+            // Add labels based on changed files
+            const labels = [];
+            const files = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number
+            });
+            
+            const fileNames = files.data.map(f => f.filename);
+            
+            if (fileNames.some(f => f.includes('mcp/rik'))) labels.push('package: rik');
+            if (fileNames.some(f => f.includes('mcp/emta'))) labels.push('package: emta');
+            if (fileNames.some(f => f.includes('mcp/open-data'))) labels.push('package: open-data');
+            if (fileNames.some(f => f.includes('packages/shared'))) labels.push('package: shared');
+            if (fileNames.some(f => f.includes('.github'))) labels.push('ci/cd');
+            if (fileNames.some(f => f.endsWith('.md'))) labels.push('documentation');
+            if (fileNames.some(f => f.includes('test') || f.includes('spec'))) labels.push('tests');
+            
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: labels
+              });
+            }

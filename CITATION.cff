@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Amorelli"
+    given-names: "Stefano"
+    orcid: "https://orcid.org/0009-0004-4917-0999"
+title: "Estonia AI Kit"
+version: 1.0.0
+date-released: 2025-01-17
+url: "https://github.com/stefanoamorelli/estonia-ai-kit"
+repository-code: "https://github.com/stefanoamorelli/estonia-ai-kit"
+license: AGPL-3.0
+keywords:
+  - estonia
+  - mcp
+  - ai
+  - government-api
+  - x-road
+  - business-register
+  - tax-api
+  - open-data
+abstract: "A comprehensive AI development toolkit that connects applications to Estonian government services, open data, and digital infrastructure through Model Context Protocol (MCP) servers and SDKs."

@@ -1,0 +1,30 @@
+{
+  "name": "@estonia-ai-kit/emta-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Estonian Tax and Customs Board (EMTA) API via X-Road",
+  "main": "dist/index.js",
+  "type": "module",
+  "author": {
+    "name": "Stefano Amorelli",
+    "email": "stefano@amorelli.tech",
+    "url": "https://amorelli.tech"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "axios": "^1.7.0",
+    "soap": "^1.1.0",
+    "node-cache": "^5.1.2",
+    "xml2js": "^0.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/xml2js": "^0.4.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@estonia-ai-kit/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities and types for Estonia AI Kit MCP servers",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "author": {
+    "name": "Stefano Amorelli",
+    "email": "stefano@amorelli.tech",
+    "url": "https://amorelli.tech"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "lint": "eslint src --ext ts",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "axios": "^1.7.0",
+    "node-cache": "^5.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  }
+}

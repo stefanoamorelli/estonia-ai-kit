@@ -1,0 +1,247 @@
+name: Dependency Update
+
+on:
+  schedule:
+    # Run every Monday at 9:00 UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update dependencies
+        id: update
+        run: |
+          # Create a new branch
+          BRANCH_NAME="deps/update-$(date +%Y%m%d)"
+          git checkout -b $BRANCH_NAME
+          
+          # Update root dependencies
+          echo "Updating root dependencies..."
+          npx npm-check-updates -u --target minor
+          
+          # Update workspace dependencies
+          for dir in mcp/* packages/*; do
+            if [ -f "$dir/package.json" ]; then
+              echo "Updating dependencies in $dir..."
+              cd $dir
+              npx npm-check-updates -u --target minor
+              cd ../..
+            fi
+          done
+          
+          # Install updated dependencies
+          bun install
+          
+          # Check if there are changes
+          if git diff --quiet; then
+            echo "No dependency updates available"
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+            echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run tests
+        if: steps.update.outputs.has_updates == 'true'
+        run: |
+          npx nx run-many --target=lint --all --parallel=3
+          npx nx run-many --target=test --all --parallel=3
+          npx nx run-many --target=build --all --parallel=3
+
+      - name: Commit changes
+        if: steps.update.outputs.has_updates == 'true'
+        run: |
+          git add .
+          git commit -m "chore(deps): update dependencies
+
+          - Update all dependencies to latest minor versions
+          - Run tests to ensure compatibility
+          - Update lockfile"
+
+      - name: Push branch
+        if: steps.update.outputs.has_updates == 'true'
+        run: |
+          git push origin ${{ steps.update.outputs.branch_name }}
+
+      - name: Create Pull Request
+        if: steps.update.outputs.has_updates == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'chore(deps): update dependencies',
+              body: `## 🔄 Automated Dependency Updates
+              
+              This PR contains automated dependency updates to the latest minor versions.
+              
+              ### Changes
+              - ✅ All dependencies updated to latest minor versions
+              - ✅ Tests passing
+              - ✅ Builds successful
+              
+              ### Review Checklist
+              - [ ] Review dependency changes in \`package.json\` files
+              - [ ] Check for breaking changes in dependency changelogs
+              - [ ] Verify application still works as expected
+              - [ ] Check bundle size changes
+              
+              ---
+              *This PR was automatically created by the dependency update workflow.*`,
+              head: '${{ steps.update.outputs.branch_name }}',
+              base: 'main',
+              draft: false
+            });
+            
+            // Add labels
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: ['dependencies', 'automated']
+            });
+            
+            // Add assignees
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              assignees: ['stefanoamorelli']
+            });
+
+  check-vulnerabilities:
+    name: Check Vulnerabilities
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run security audit
+        id: audit
+        run: |
+          echo "## Security Audit Report" > audit-report.md
+          echo "" >> audit-report.md
+          
+          # Run npm audit
+          npm audit --json > audit.json || true
+          
+          # Parse results
+          if [ -s audit.json ]; then
+            CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' audit.json)
+            HIGH=$(jq '.metadata.vulnerabilities.high // 0' audit.json)
+            MODERATE=$(jq '.metadata.vulnerabilities.moderate // 0' audit.json)
+            LOW=$(jq '.metadata.vulnerabilities.low // 0' audit.json)
+            
+            echo "### Vulnerability Summary" >> audit-report.md
+            echo "- 🔴 Critical: $CRITICAL" >> audit-report.md
+            echo "- 🟠 High: $HIGH" >> audit-report.md
+            echo "- 🟡 Moderate: $MODERATE" >> audit-report.md
+            echo "- 🟢 Low: $LOW" >> audit-report.md
+            
+            if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+              echo "has_vulnerabilities=true" >> $GITHUB_OUTPUT
+            else
+              echo "has_vulnerabilities=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Create issue if vulnerabilities found
+        if: steps.audit.outputs.has_vulnerabilities == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('audit-report.md', 'utf8');
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Security vulnerabilities detected',
+              body: report + '\n\n---\n*This issue was automatically created by the dependency update workflow.*',
+              labels: ['security', 'dependencies', 'urgent']
+            });
+
+  update-licenses:
+    name: Update License Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Generate license report
+        run: |
+          npx license-checker --json --out licenses.json
+          
+          echo "# License Report" > LICENSE-REPORT.md
+          echo "" >> LICENSE-REPORT.md
+          echo "Generated on $(date)" >> LICENSE-REPORT.md
+          echo "" >> LICENSE-REPORT.md
+          echo "## Summary" >> LICENSE-REPORT.md
+          
+          # Count licenses by type
+          echo "| License | Count |" >> LICENSE-REPORT.md
+          echo "|---------|-------|" >> LICENSE-REPORT.md
+          
+          jq -r 'to_entries | map(.value.licenses) | group_by(.) | map({license: .[0], count: length}) | sort_by(.count) | reverse | .[] | "| \(.license) | \(.count) |"' licenses.json >> LICENSE-REPORT.md || true
+
+      - name: Check for incompatible licenses
+        run: |
+          # Check for GPL-incompatible licenses
+          INCOMPATIBLE=$(jq -r 'to_entries | map(select(.value.licenses | test("GPL|LGPL|AGPL") | not)) | map(.key)' licenses.json)
+          
+          if [ ! -z "$INCOMPATIBLE" ]; then
+            echo "⚠️ Found potentially incompatible licenses"
+            echo "$INCOMPATIBLE"
+          fi
