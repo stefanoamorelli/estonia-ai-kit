@@ -13,13 +13,13 @@ export class RIKApiClient {
       timeout: 10000,
       headers: {
         'User-Agent': 'Estonia-AI-Kit-RIK-MCP/1.0',
-        'Accept': 'application/json, text/html',
+        Accept: 'application/json, text/html',
       },
     });
 
-    this.cache = new NodeCache({ 
+    this.cache = new NodeCache({
       stdTTL: 600,
-      checkperiod: 120 
+      checkperiod: 120,
     });
   }
 
@@ -39,12 +39,14 @@ export class RIKApiClient {
       const response = await this.client.get(
         `${this.ARIREGISTER_API}/eng/company_search?${searchParams}`
       );
-      
+
       const results = this.parseSearchResults(response.data);
       this.cache.set(cacheKey, results);
       return results;
     } catch (error) {
-      throw new Error(`Failed to search companies: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to search companies: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -54,15 +56,15 @@ export class RIKApiClient {
     if (cached) return cached;
 
     try {
-      const response = await this.client.get(
-        `${this.ARIREGISTER_API}/eng/company/${registryCode}`
-      );
-      
+      const response = await this.client.get(`${this.ARIREGISTER_API}/eng/company/${registryCode}`);
+
       const details = this.parseCompanyDetails(response.data);
       this.cache.set(cacheKey, details);
       return details;
     } catch (error) {
-      throw new Error(`Failed to get company details: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get company details: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -75,12 +77,14 @@ export class RIKApiClient {
       const response = await this.client.get(
         `${this.ARIREGISTER_API}/eng/company/${registryCode}/annual_reports`
       );
-      
+
       const reports = this.parseAnnualReports(response.data);
       this.cache.set(cacheKey, reports);
       return reports;
     } catch (error) {
-      throw new Error(`Failed to get annual reports: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get annual reports: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -93,12 +97,14 @@ export class RIKApiClient {
       const response = await this.client.get(
         `${this.ARIREGISTER_API}/eng/company/${registryCode}/participants`
       );
-      
+
       const members = this.parseBoardMembers(response.data);
       this.cache.set(cacheKey, members);
       return members;
     } catch (error) {
-      throw new Error(`Failed to get board members: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get board members: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -107,10 +113,12 @@ export class RIKApiClient {
       const response = await this.client.get(
         `${this.ARIREGISTER_API}/eng/company/${registryCode}/tax_debt`
       );
-      
+
       return this.parseTaxDebtStatus(response.data);
     } catch (error) {
-      throw new Error(`Failed to check tax debt: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to check tax debt: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -131,12 +139,14 @@ export class RIKApiClient {
       const response = await this.client.get(
         `${this.ARIREGISTER_API}/eng/participant_search?${searchParams}`
       );
-      
+
       const results = this.parsePersonSearchResults(response.data);
       this.cache.set(cacheKey, results);
       return results;
     } catch (error) {
-      throw new Error(`Failed to search by person: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to search by person: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 

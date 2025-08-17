@@ -9,12 +9,12 @@ Secure X-Road integration with Estonia's Tax and Customs Board (EMTA) for VAT ve
 
 ### X-Road Architecture
 
-| Component | Protocol | Security | Latency |
-|-----------|----------|----------|----------|
-| X-Road Gateway | SOAP/HTTPS | mTLS + TSL | < 100ms |
-| Message Transport | REST/SOAP | End-to-end encryption | < 50ms |
-| Service Discovery | WSDL | PKI certificates | Cached |
-| Audit Trail | Immutable logs | Cryptographic proof | Real-time |
+| Component         | Protocol       | Security              | Latency   |
+| ----------------- | -------------- | --------------------- | --------- |
+| X-Road Gateway    | SOAP/HTTPS     | mTLS + TSL            | < 100ms   |
+| Message Transport | REST/SOAP      | End-to-end encryption | < 50ms    |
+| Service Discovery | WSDL           | PKI certificates      | Cached    |
+| Audit Trail       | Immutable logs | Cryptographic proof   | Real-time |
 
 ### Quick Start
 
@@ -50,15 +50,15 @@ interface EMTAServices {
   verifyVAT(vatNumber: string): VATStatus;
   getVATRates(): VATRateTable;
   checkVATGroup(groupId: string): VATGroupInfo;
-  
+
   // Tax Debt
   checkTaxDebt(registryCode: string): TaxDebtStatus;
   getTaxDebtDetails(registryCode: string): DetailedDebt[];
-  
+
   // Customs
   getCustomsTariff(commodityCode: string): TariffInfo;
   checkEORIStatus(eoriNumber: string): EORIValidation;
-  
+
   // Declarations
   getDeclarationStatus(declarationId: string): DeclarationInfo;
 }

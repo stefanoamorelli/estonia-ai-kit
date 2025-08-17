@@ -22,7 +22,8 @@ export const rikTools: Tool[] = [
         status: {
           type: 'string',
           enum: ['R', 'K', 'L', 'N'],
-          description: 'Company status: R (registered), K (deleted), L (liquidated), N (in liquidation)',
+          description:
+            'Company status: R (registered), K (deleted), L (liquidated), N (in liquidation)',
         },
         address: {
           type: 'string',

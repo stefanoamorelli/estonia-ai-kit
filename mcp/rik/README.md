@@ -9,13 +9,13 @@ Connect AI assistants to Estonia's Business Register (Äriregister) for real-tim
 
 ### What's Inside
 
-| Data Type | Coverage | Update Frequency |
-|-----------|----------|-----------------|
-| Company profiles | 300,000+ entities | Real-time |
-| Annual reports | 10 years history | Daily |
-| Ownership chains | Full depth | Real-time |
-| Board members | Current & historical | Real-time |
-| Financial statements | XBRL format | As filed |
+| Data Type            | Coverage             | Update Frequency |
+| -------------------- | -------------------- | ---------------- |
+| Company profiles     | 300,000+ entities    | Real-time        |
+| Annual reports       | 10 years history     | Daily            |
+| Ownership chains     | Full depth           | Real-time        |
+| Board members        | Current & historical | Real-time        |
+| Financial statements | XBRL format          | As filed         |
 
 ### Quick Start
 
@@ -39,25 +39,15 @@ bun add @estonia-ai-kit/rik-mcp-server
 
 ```typescript
 interface RIKTools {
-  searchCompany(params: {
-    name?: string;
-    registryCode?: string;
-    vatNumber?: string;
-  }): CompanyData;
+  searchCompany(params: { name?: string; registryCode?: string; vatNumber?: string }): CompanyData;
 
   getCompanyDetails(registryCode: string): DetailedCompany;
-  
-  getAnnualReports(params: {
-    registryCode: string;
-    year?: number;
-  }): FinancialReport[];
-  
+
+  getAnnualReports(params: { registryCode: string; year?: number }): FinancialReport[];
+
   getOwnershipStructure(registryCode: string): OwnershipTree;
-  
-  searchByPerson(params: {
-    name?: string;
-    idCode?: string;
-  }): PersonCompanies[];
+
+  searchByPerson(params: { name?: string; idCode?: string }): PersonCompanies[];
 }
 ```
 
@@ -71,6 +61,7 @@ interface RIKTools {
 ### Data Sources
 
 Direct integration with:
+
 - [Äriregister API](https://avaandmed.ariregister.rik.ee/en)
 - [e-Business Portal](https://ariregister.rik.ee/eng)
 - [XBRL Financial Reports](https://aruanded.rik.ee/)

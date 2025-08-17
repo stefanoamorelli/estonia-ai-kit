@@ -13,41 +13,33 @@ Battle-tested utilities, type definitions, and X-Road client implementations use
 // Type-safe API clients
 import { XRoadClient, APIClient } from '@estonia-ai-kit/shared';
 
-// Caching strategies  
+// Caching strategies
 import { CacheManager, TTLCache } from '@estonia-ai-kit/shared/cache';
 
 // Estonian-specific validators
-import { 
+import {
   validateRegistryCode,
   validatePersonalCode,
   validateIBAN,
-  validateVATNumber 
+  validateVATNumber,
 } from '@estonia-ai-kit/shared/validators';
 
 // X-Road utilities
-import { 
-  buildSOAPEnvelope,
-  parseXRoadResponse,
-  signMessage 
-} from '@estonia-ai-kit/shared/xroad';
+import { buildSOAPEnvelope, parseXRoadResponse, signMessage } from '@estonia-ai-kit/shared/xroad';
 
 // Data transformers
-import { 
-  XMLToJSON,
-  normalizeEstonianText,
-  parseXBRL 
-} from '@estonia-ai-kit/shared/transform';
+import { XMLToJSON, normalizeEstonianText, parseXBRL } from '@estonia-ai-kit/shared/transform';
 ```
 
 ### Core Components
 
-| Component | Purpose | Features |
-|-----------|---------|----------|
-| `XRoadClient` | X-Road service consumption | mTLS, SOAP, async/await |
-| `CacheManager` | Response caching | LRU, TTL, memory limits |
-| `RateLimiter` | API throttling | Token bucket, sliding window |
-| `RetryClient` | Resilient requests | Exponential backoff, jitter |
-| `Logger` | Structured logging | JSON, levels, correlation IDs |
+| Component      | Purpose                    | Features                      |
+| -------------- | -------------------------- | ----------------------------- |
+| `XRoadClient`  | X-Road service consumption | mTLS, SOAP, async/await       |
+| `CacheManager` | Response caching           | LRU, TTL, memory limits       |
+| `RateLimiter`  | API throttling             | Token bucket, sliding window  |
+| `RetryClient`  | Resilient requests         | Exponential backoff, jitter   |
+| `Logger`       | Structured logging         | JSON, levels, correlation IDs |
 
 ### Estonian Validators
 
@@ -73,12 +65,12 @@ const client = new XRoadClient({
   memberCode: '12345678',
   subsystemCode: 'AIKIT',
   certificate: fs.readFileSync('cert.pem'),
-  privateKey: fs.readFileSync('key.pem')
+  privateKey: fs.readFileSync('key.pem'),
 });
 
 const response = await client.request({
   service: 'EMTA/TaxDebt/v1',
-  body: { registryCode: '12345678' }
+  body: { registryCode: '12345678' },
 });
 ```
 
@@ -89,19 +81,19 @@ const response = await client.request({
 const resilient = withRetry(apiCall, {
   maxAttempts: 3,
   backoff: 'exponential',
-  jitter: true
+  jitter: true,
 });
 
 // Rate limiting
 const limited = withRateLimit(apiCall, {
   requests: 100,
-  window: '1m'
+  window: '1m',
 });
 
 // Response caching
 const cached = withCache(apiCall, {
   ttl: '1h',
-  key: (params) => `${params.type}:${params.id}`
+  key: (params) => `${params.type}:${params.id}`,
 });
 ```
 
