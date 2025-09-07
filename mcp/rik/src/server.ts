@@ -1,17 +1,14 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { RIKApiClient } from './clients/rik-client.js';
-import { RIKOpenDataClient } from './clients/rik-open-data-client.js';
+import { RIKClient } from './clients/index.js';
 import { CompanyHandlers } from './handlers/company-handlers.js';
 import { rikTools } from './tools/index.js';
 
 export class RIKMCPServer {
   private server: Server;
-  private apiClient: RIKApiClient;
-  private openDataClient: RIKOpenDataClient;
+  private rikClient: RIKClient;
   private companyHandlers: CompanyHandlers;
-  private useOpenData: boolean = true; // Use open data by default
 
   constructor() {
     this.server = new Server(
@@ -26,12 +23,8 @@ export class RIKMCPServer {
       }
     );
 
-    this.apiClient = new RIKApiClient();
-    this.openDataClient = new RIKOpenDataClient();
-    // Use open data client by default for better reliability
-    this.companyHandlers = new CompanyHandlers(
-      this.useOpenData ? this.openDataClient : this.apiClient
-    );
+    this.rikClient = new RIKClient();
+    this.companyHandlers = new CompanyHandlers(this.rikClient as any);
     this.setupHandlers();
   }
 
@@ -82,19 +75,11 @@ export class RIKMCPServer {
             break;
 
           case 'get_registry_statistics':
-            if (this.openDataClient && 'getStatistics' in this.openDataClient) {
-              result = await this.openDataClient.getStatistics();
-            } else {
-              result = { error: 'Statistics not available with current client' };
-            }
+            result = await this.rikClient.getStatistics();
             break;
 
           case 'check_data_availability':
-            if (this.openDataClient && 'checkDataAvailability' in this.openDataClient) {
-              result = await this.openDataClient.checkDataAvailability();
-            } else {
-              result = { error: 'Data availability check not available with current client' };
-            }
+            result = await this.rikClient.checkDataAvailability();
             break;
 
           default:
@@ -131,8 +116,23 @@ export class RIKMCPServer {
   }
 
   async run() {
+    // console.error('RIK MCP Server starting...');
     const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    console.error('RIK MCP Server v1.0.0 running on stdio');
+    
+    try {
+      await this.server.connect(transport);
+      // console.error('RIK MCP Server running on stdio');
+      
+      // Handle shutdown gracefully
+      process.on('SIGINT', () => {
+        // console.error('Server shutting down...');
+        process.exit(0);
+      });
+      
+      return true;
+    } catch (error) {
+      // console.error('Failed to start server:', error);
+      return false;
+    }
   }
 }
