@@ -52,9 +52,9 @@ Model Context Protocol (MCP) is an open protocol that standardizes how AI applic
 >
 > | Package                                                   | Status     | Data Source                            | Ready for Use?                  |
 > | --------------------------------------------------------- | ---------- | -------------------------------------- | ------------------------------- |
-> | **[RIK](https://ariregister.rik.ee)** (Business Register) | ✅ Working | Real open data files (daily snapshots) | ✅ Yes - requires data download |
-> | **[EMTA](https://www.emta.ee)** (Tax & Customs)           | 🚧 WIP     | Mock data (POC demonstration)          | ❌ No - X-Road auth needed      |
-> | **[Open Data](https://andmed.stat.ee)** Portal            | ✅ Working | Statistics Estonia API (real data)     | ✅ Yes - statistics data        |
+> | **[RIK](https://ariregister.rik.ee)** (Business Register) | 🔶 WIP | Real open data files (daily snapshots) | 🔶 Partial - requires data download |
+> | **[EMTA](https://www.emta.ee)** (Tax & Customs)           | 🔴 POC     | Mock data (POC demonstration)          | 🔴 No - X-Road auth needed      |
+> | **[Open Data](https://andmed.stat.ee)** Portal            | 🔶 WIP | Statistics Estonia API (real data)     | 🔶 Partial - curated tables only        |
 >
 > **For RIK Package Users:**
 >
@@ -88,10 +88,11 @@ Built with modern TypeScript and the Model Context Protocol (MCP) SDK:
 
 | Package                                                   | Description                    | NPM                                                                                                                                             | Status   |
 | --------------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| [`@estonia-ai-kit/rik-mcp-server`](./mcp/rik)             | Estonian Business Register API | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/rik-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/rik-mcp-server)             | ✅ Ready |
-| [`@estonia-ai-kit/emta-mcp-server`](./mcp/emta)           | Tax and Customs Board API      | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/emta-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/emta-mcp-server)           | ✅ Ready |
-| [`@estonia-ai-kit/open-data-mcp-server`](./mcp/open-data) | Open Data Portal API           | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/open-data-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/open-data-mcp-server) | ✅ Ready |
+| [`@estonia-ai-kit/rik-mcp-server`](./mcp/rik)             | Estonian Business Register API | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/rik-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/rik-mcp-server)             | 🔶 WIP |
+| [`@estonia-ai-kit/emta-mcp-server`](./mcp/emta)           | Tax and Customs Board API      | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/emta-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/emta-mcp-server)           | 🔴 POC |
+| [`@estonia-ai-kit/open-data-mcp-server`](./mcp/open-data) | Open Data Portal API           | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/open-data-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/open-data-mcp-server) | 🔶 WIP |
 | [`@estonia-ai-kit/shared`](./packages/shared)             | Shared utilities and types     | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/shared)](https://www.npmjs.com/package/@estonia-ai-kit/shared)                             | ✅ Ready |
+| [`rag/riigiteataja`](./rag/riigiteataja)                   | Estonian Legal Document RAG    | N/A                                                                                                                                             | 🔶 WIP |
 
 ## 🛠️ Installation
 
@@ -121,20 +122,22 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 {
   "mcpServers": {
     "estonia-rik": {
-      "command": "bunx",
-      "args": ["@estonia-ai-kit/rik-mcp-server"]
+      "command": "node",
+      "args": ["/path/to/estonia-ai-kit/mcp/rik/dist/index.js"]
     },
     "estonia-emta": {
-      "command": "bunx",
-      "args": ["@estonia-ai-kit/emta-mcp-server"]
+      "command": "node",
+      "args": ["/path/to/estonia-ai-kit/mcp/emta/dist/index.js"]
     },
     "estonia-open-data": {
-      "command": "bunx",
-      "args": ["@estonia-ai-kit/open-data-mcp-server"]
+      "command": "node",
+      "args": ["/path/to/estonia-ai-kit/mcp/open-data/dist/index.js"]
     }
   }
 }
 ```
+
+> **Note**: Run `npm run build` in each MCP directory before first use.
 
 ### 2. Use in Your AI Application
 
