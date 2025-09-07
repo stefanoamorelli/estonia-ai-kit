@@ -38,6 +38,11 @@ const DATASETS = [
     file: 'ettevotja_rekvisiidid__kasusaajad.json.zip',
     description: 'Beneficial owners (JSON)',
   },
+  {
+    name: 'annual_reports',
+    file: 'ettevotja_rekvisiidid__majandusaasta_aruanded.json.zip',
+    description: 'Annual reports (JSON)',
+  },
 ];
 
 async function ensureDataDirectory() {
