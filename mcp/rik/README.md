@@ -2,128 +2,169 @@
 
 ## Estonian Business Register MCP Server
 
-Connect AI assistants to Estonia's Business Register (Äriregister) for real-time company data, ownership structures, and financial reports.
+Connect AI assistants to Estonia's Business Register (Äriregister) with **358,465 companies** and **503,453 board members** in a blazing-fast SQLite database.
 
 > [!NOTE]
 > Part of the [Estonia AI Kit](https://github.com/stefanoamorelli/estonia-ai-kit) monorepo - The Digital Nation's AI Toolkit
 
 > [!IMPORTANT]
-> This package provides access to **real Estonian Business Register data** through downloadable open data files. You'll need to download the data files first (see Getting Started below).
->
-> **Current implementation:** Uses the file download approach for accessing business data.
->
-> **API access:** Direct [API integration](https://avaandmed.ariregister.rik.ee/en/open-data-api/introduction-api-services) requires authentication and is currently work in progress (not yet released). PRs are welcome!
->
-> ## 🚀 Getting Started
->
-> **Step 1: Download the data files (required)**
->
-> ```bash
-> cd mcp/rik
-> bun run download-data
-> ```
->
-> This downloads ~100MB of data files from the official RIK open data repository.
->
-> **Step 2: Use the MCP server**
->
-> ```bash
-> bun start
-> ```
->
-> ## ✅ What Works
->
-> - Company search by name, registry code, or keyword
-> - Basic company information (name, status, address, VAT number)
-> - Board members and representatives data
-> - Registry statistics
-> - Data availability checking
->
-> ## ⚠️ Limitations
->
-> - **Data freshness**: Daily snapshots (not real-time)
-> - **Privacy**: No personal ID numbers (removed since Nov 2024)
-> - **Annual reports**: Not available in open data
-> - **Tax info**: Requires EMTA authentication
-> - **File size**: ~100MB download required
->
-> ## 📓 Data Source
->
-> Official open data files from: https://avaandmed.ariregister.rik.ee/en/downloading-open-data
->
-> - Updated daily at source
-> - Free to use without authentication
-> - Includes 300,000+ Estonian companies
->
-> ## 🌐 For Real-Time Data
->
-> - Web portal: https://ariregister.rik.ee
-> - API access: Register at https://avaandmed.ariregister.rik.ee/en
+> **New in v1.1.0**: SQLite database with 358k+ companies and 503k+ board members for instant queries!
+> 
+> This server uses downloadable open data files and builds a local SQLite database for lightning-fast searches.
 
-### What's Inside
+## 🚀 Quick Start
 
-| Data Type            | Coverage             | Update Frequency |
-| -------------------- | -------------------- | ---------------- |
-| Company profiles     | 300,000+ entities    | Real-time        |
-| Annual reports       | 10 years history     | Daily            |
-| Ownership chains     | Full depth           | Real-time        |
-| Board members        | Current & historical | Real-time        |
-| Financial statements | XBRL format          | As filed         |
-
-### Quick Start
+### Step 1: Download and Build Database (Required - One Time)
 
 ```bash
-# Install
-bun add @estonia-ai-kit/rik-mcp-server
+cd mcp/rik
 
-# Configure in Claude Desktop
-# ~/Library/Application Support/Claude/claude_desktop_config.json
+# Download data files (~6GB total)
+bun run download-data
+
+# Build SQLite database
+node scripts/import-board-stream.js
+```
+
+This downloads:
+- 📊 92MB - Basic company data (CSV)
+- 👥 976MB - Board members (JSON) 
+- 💼 718MB - Shareholders (JSON)
+- 🏢 4.3GB - General company data (JSON)
+- 🔍 328MB - Beneficial owners (JSON)
+
+And creates a **198MB SQLite database** with instant search capabilities!
+
+### Step 2: Configure Claude Desktop
+
+Add to `~/.config/Claude/claude_desktop_config.json` (Linux) or `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac):
+
+```json
 {
   "mcpServers": {
     "estonia-rik": {
-      "command": "bunx",
-      "args": ["@estonia-ai-kit/rik-mcp-server"]
+      "command": "node",
+      "args": ["/path/to/estonia-ai-kit/mcp/rik/dist/index.js"]
     }
   }
 }
 ```
 
-### Available Tools
+## 🎯 What You Can Ask
+
+### 🏢 Company Searches
+- "Show me companies at Sepapaja tn 6" → Returns 4,477 companies!
+- "Find all companies with 'crypto' in their name"
+- "List companies registered in 2024"
+- "Show companies in liquidation status"
+- "Find company details by registry code"
+
+### 👥 Board Member Queries  
+- "Show board members of a specific company"
+- "Find all companies where [person name] is a board member"
+- "Which person serves on the most company boards?"
+- "Show companies that share board members with Pipedrive"
+
+### 📊 Statistical Analysis
+- "How many companies are registered in Estonia?" → 358,465
+- "How many board members in total?" → 503,453
+- "Distribution of companies by legal form (OÜ, AS, MTÜ)"
+- "Most popular addresses for company registration"
+
+### 🔍 Advanced Detective Work
+- "Find all companies at the same address as Bolt"
+- "Companies sharing both address AND board members" 
+- "Sequential registry codes (registered same day)"
+- "Foreign-owned companies by board member addresses"
+
+## ✨ Features
+
+### What Works Great
+✅ **Lightning Fast** - SQLite database with proper indexing  
+✅ **Comprehensive** - 358,465 companies, 503,453 board members  
+✅ **Rich Data** - Names, addresses, VAT numbers, status, registration dates  
+✅ **Board Members** - Full names, roles, start/end dates  
+✅ **Address Search** - Find all companies at any address  
+✅ **People Search** - Find all companies by person name  
+✅ **Complex Queries** - Cross-reference board members and addresses  
+
+### Current Limitations
+⚠️ **Data Freshness** - Daily snapshots (re-download for updates)  
+⚠️ **Annual Reports** - Use XBRL filings server for financial data  
+⚠️ **Tax Debts** - Requires EMTA authentication  
+⚠️ **Personal IDs** - Removed for privacy (since Nov 2024)  
+
+## 📈 Database Statistics
+
+| Table | Records | Description |
+|-------|---------|-------------|
+| companies | 358,465 | All Estonian companies |
+| board_members | 503,453 | Current and historical board members |
+| shareholders | Available | Company ownership data |
+| beneficial_owners | Available | Ultimate beneficial owners |
+| company_general_data | Available | Extended company information |
+
+## 🛠️ Available Tools
 
 ```typescript
-interface RIKTools {
-  searchCompany(params: { name?: string; registryCode?: string; vatNumber?: string }): CompanyData;
+// Company Search
+searchCompany({
+  name?: string,        // Company name or partial
+  registryCode?: string,// 8-digit code
+  address?: string,     // Any part of address
+  query?: string        // General search
+})
 
-  getCompanyDetails(registryCode: string): DetailedCompany;
+// Company Details  
+getCompanyDetails(registryCode: string)
 
-  getAnnualReports(params: { registryCode: string; year?: number }): FinancialReport[];
+// Board Members
+getBoardMembers(registryCode: string)
 
-  getOwnershipStructure(registryCode: string): OwnershipTree;
+// Person Search
+searchByPerson({
+  name: string,         // Person's full or partial name
+  personalCode?: string // Optional ID code
+})
 
-  searchByPerson(params: { name?: string; idCode?: string }): PersonCompanies[];
-}
+// Statistics
+getRegistryStatistics() // Database statistics
+
+// Data Check
+checkDataAvailability() // Verify database status
 ```
 
-### Performance
+## 🔧 Maintenance
 
-- **Response time**: < 200ms (p95)
-- **Cache hit rate**: 85%
-- **Rate limit**: 1000 req/hour
-- **Uptime**: 99.9%
+### Update Data (Monthly Recommended)
+```bash
+# Re-download latest data
+bun run download-data
 
-### Data Sources
+# Rebuild database
+rm .rik-data/rik_data.db
+node scripts/import-board-stream.js
+```
 
-Direct integration with:
+### Check Database
+```bash
+# Query statistics
+sqlite3 .rik-data/rik_data.db "SELECT COUNT(*) FROM companies;"
+sqlite3 .rik-data/rik_data.db "SELECT COUNT(*) FROM board_members;"
+```
 
-- [Äriregister API](https://avaandmed.ariregister.rik.ee/en)
-- [e-Business Portal](https://ariregister.rik.ee/eng)
-- [XBRL Financial Reports](https://aruanded.rik.ee/)
+## 🌐 Data Sources
 
-### 📦 Part of Estonia AI Kit
+- **Open Data**: https://avaandmed.ariregister.rik.ee/en/downloading-open-data
+- **Web Portal**: https://ariregister.rik.ee
+- **Update Frequency**: Daily at source
+- **License**: Open data, free to use
+
+## 📦 Part of Estonia AI Kit
 
 This package is part of the [Estonia AI Kit](https://github.com/stefanoamorelli/estonia-ai-kit) monorepo. For complete documentation, contributing guidelines, and additional tools, visit the main repository.
 
-### ⚖️ License
+## ⚖️ License
 
 This open-source project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. This means:
 
