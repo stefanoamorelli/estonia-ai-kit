@@ -42,3 +42,7 @@ Thumbs.db
 .nx/workspace-data
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+# RIK data files (downloaded via script)
+.rik-data/
+*.rik-data-cache/
