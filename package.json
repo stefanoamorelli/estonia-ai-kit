@@ -1,7 +1,7 @@
 {
   "name": "estonia-ai-kit",
   "version": "1.1.0",
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "private": true,
   "description": "Estonian Government APIs MCP Servers - Monorepo",
   "author": {
