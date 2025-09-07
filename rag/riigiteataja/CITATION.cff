@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+title: 'Estonia AI Kit: Riigi Teataja RAG'
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Stefano
+    family-names: Amorelli
+    email: stefano@amorelli.tech
+    orcid: 'https://orcid.org/0000-0000-0000-0000'
+repository-code: 'https://github.com/estonia-ai-kit/riigiteataja-rag'
+url: 'https://github.com/estonia-ai-kit'
+abstract: >-
+  FAISS-powered Retrieval-Augmented Generation (RAG) pipeline
+  for Estonian legal documents from Riigi Teataja. Enhances
+  ChatGPT responses with accurate Estonian law citations by
+  retrieving relevant legal sections from a vector database.
+keywords:
+  - estonia
+  - legal-tech
+  - rag
+  - faiss
+  - vector-search
+  - riigi-teataja
+  - estonian-law
+  - ai
+  - llm
+  - chatgpt
+license: AGPL-3.0
+version: 0.1.0
+date-released: '2024-01-01'
