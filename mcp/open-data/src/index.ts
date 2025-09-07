@@ -4,6 +4,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import axios from 'axios';
 import NodeCache from 'node-cache';
+import { StatEEClient } from './stat-ee-client.js';
 
 const cache = new NodeCache({ stdTTL: 600 });
 
@@ -51,8 +52,11 @@ interface DatasetStatistics {
 
 class OpenDataMCPServer {
   private server: Server;
+  private statClient: StatEEClient;
+  private useMockData: boolean = false; // Use real API by default
 
   constructor() {
+    this.statClient = new StatEEClient('en');
     this.server = new Server(
       {
         name: 'open-data-mcp-server',
@@ -254,6 +258,102 @@ class OpenDataMCPServer {
             },
           },
         },
+        // Statistics Estonia (stat.ee) Real API Tools
+        {
+          name: 'get_statistics_categories',
+          description: 'Get main statistics categories from Statistics Estonia',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+          },
+        },
+        {
+          name: 'browse_statistics',
+          description: 'Browse statistics tables in a category',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              path: {
+                type: 'string',
+                description: 'Category path (e.g., "rahvastik" for population)',
+              },
+            },
+            required: ['path'],
+          },
+        },
+        {
+          name: 'get_population_statistics',
+          description: 'Get Estonian population statistics',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              year: {
+                type: 'string',
+                description: 'Year (e.g., "2024")',
+                default: '2024',
+              },
+            },
+          },
+        },
+        {
+          name: 'get_economic_indicators',
+          description: 'Get Estonian economic indicators (GDP, unemployment, wages)',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              indicator: {
+                type: 'string',
+                enum: ['gdp', 'unemployment', 'wages'],
+                description: 'Economic indicator type',
+              },
+              year: {
+                type: 'string',
+                description: 'Year',
+                default: '2024',
+              },
+            },
+            required: ['indicator'],
+          },
+        },
+        {
+          name: 'query_statistics_table',
+          description: 'Query any statistics table with custom filters',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              tablePath: {
+                type: 'string',
+                description: 'Full table path (e.g., "rahvastik/rahvastikunaitajad-ja-koosseis/rahvaarv-ja-rahvastiku-koosseis/RV021")',
+              },
+              filters: {
+                type: 'array',
+                description: 'Query filters',
+                items: {
+                  type: 'object',
+                  properties: {
+                    code: { type: 'string' },
+                    values: { type: 'array', items: { type: 'string' } },
+                  },
+                },
+              },
+            },
+            required: ['tablePath'],
+          },
+        },
+        {
+          name: 'search_statistics_tables',
+          description: 'Search for statistics tables by keyword',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              keyword: {
+                type: 'string',
+                description: 'Search keyword',
+              },
+            },
+            required: ['keyword'],
+          },
+        },
       ],
     }));
 
@@ -294,6 +394,31 @@ class OpenDataMCPServer {
               args.category as string,
               args.region as string
             );
+
+          // Statistics Estonia Real API handlers
+          case 'get_statistics_categories':
+            return await this.getStatisticsCategories();
+
+          case 'browse_statistics':
+            return await this.browseStatistics(args.path as string);
+
+          case 'get_population_statistics':
+            return await this.getPopulationStatistics(args.year as string || '2024');
+
+          case 'get_economic_indicators':
+            return await this.getEconomicIndicators(
+              args.indicator as string,
+              args.year as string || '2024'
+            );
+
+          case 'query_statistics_table':
+            return await this.queryStatisticsTable(
+              args.tablePath as string,
+              args.filters as any[]
+            );
+
+          case 'search_statistics_tables':
+            return await this.searchStatisticsTables(args.keyword as string);
 
           default:
             throw new Error(`Unknown tool: ${name}`);
@@ -826,6 +951,224 @@ class OpenDataMCPServer {
               query: { category, region },
               count: filtered.length,
               datasets: filtered,
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    };
+  }
+
+  // Statistics Estonia Real API Methods
+  private async getStatisticsCategories() {
+    try {
+      const categories = await this.statClient.getMainCategories();
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                source: 'Statistics Estonia (stat.ee)',
+                categories: categories,
+                note: 'Use browse_statistics with category ID to explore tables'
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async browseStatistics(path: string) {
+    try {
+      const items = await this.statClient.getCategory(path);
+      const tables = items.filter(i => i.type === 't');
+      const folders = items.filter(i => i.type === 'l');
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                path: path,
+                folders: folders,
+                tables: tables,
+                total_tables: tables.length,
+                total_folders: folders.length
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async getPopulationStatistics(year: string) {
+    try {
+      const data = await this.statClient.getPopulationByYear(year);
+      const formatted = this.statClient.formatDataResponse(data);
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                source: 'Statistics Estonia',
+                year: year,
+                data: formatted,
+                metadata: data.metadata
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async getEconomicIndicators(indicator: string, year: string) {
+    try {
+      let data;
+      let indicatorName;
+      
+      switch (indicator) {
+        case 'gdp':
+          data = await this.statClient.getGDP([year]);
+          indicatorName = 'GDP';
+          break;
+        case 'unemployment':
+          data = await this.statClient.getUnemploymentRate(year);
+          indicatorName = 'Unemployment Rate';
+          break;
+        case 'wages':
+          data = await this.statClient.getAverageWages(year, '1');
+          indicatorName = 'Average Wages';
+          break;
+        default:
+          throw new Error(`Unknown indicator: ${indicator}`);
+      }
+      
+      const formatted = this.statClient.formatDataResponse(data);
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                source: 'Statistics Estonia',
+                indicator: indicatorName,
+                year: year,
+                data: formatted,
+                metadata: data.metadata
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async queryStatisticsTable(tablePath: string, filters?: any[]) {
+    try {
+      // Get metadata first
+      const metadata = await this.statClient.getTableMetadata(tablePath);
+      
+      // If no filters provided, get latest data
+      let data;
+      if (!filters || filters.length === 0) {
+        data = await this.statClient.getLatestData(tablePath);
+      } else {
+        // Convert filters to proper format
+        const queryFilters = filters.map(f => ({
+          code: f.code,
+          selection: {
+            filter: 'item' as const,
+            values: f.values
+          }
+        }));
+        data = await this.statClient.queryTableData(tablePath, queryFilters);
+      }
+      
+      const formatted = this.statClient.formatDataResponse(data);
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                table: metadata.title,
+                data: formatted,
+                metadata: data.metadata,
+                variables: metadata.variables
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private async searchStatisticsTables(keyword: string) {
+    try {
+      const results = await this.statClient.searchTables(keyword);
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                search_term: keyword,
+                found: results.length,
+                tables: results,
+                note: 'Use query_statistics_table with table ID to get data'
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  private handleError(error: any) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              error: 'Statistics API Error',
+              message: error instanceof Error ? error.message : 'Unknown error',
+              note: 'Check if the table path or parameters are correct'
             },
             null,
             2
