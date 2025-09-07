@@ -24,29 +24,6 @@
 > [!NOTE]
 > This is a community-driven open source project and is not affiliated with, endorsed by, or connected to the Estonian government or any official Estonian institutions.
 
-> [!IMPORTANT]
-> This project is **constantly evolving** as we work to integrate more Estonian government services and improve existing implementations. Current functionality varies by package:
->
-> | Package                                                   | Status     | Data Source                            | Ready for Use?                  |
-> | --------------------------------------------------------- | ---------- | -------------------------------------- | ------------------------------- |
-> | **[RIK](https://ariregister.rik.ee)** (Business Register) | ✅ Working | Real open data files (daily snapshots) | ✅ Yes - requires data download |
-> | **[EMTA](https://www.emta.ee)** (Tax & Customs)           | 🚧 WIP     | Mock data (POC demonstration)          | ❌ No - X-Road auth needed      |
-> | **[Open Data](https://andmed.stat.ee)** Portal            | ✅ Working | Statistics Estonia API (real data)     | ✅ Yes - statistics data        |
->
-> **For RIK Package Users:**
->
-> 1. Run `bun run download-data` in the RIK package to fetch real data files
-> 2. Data is from daily snapshots (not real-time)
-> 3. Personal ID numbers are removed for privacy (since Nov 2024)
->
-> **This is experimental software** intended for:
->
-> - Learning and experimentation
-> - Development reference
-> - Community contribution
-> - Testing MCP server implementations
->
-> **NOT suitable for production use** without significant additional development.
 
 ## 🌍 The Estonian Digital Revolution
 
@@ -69,6 +46,30 @@ The toolkit follows Estonia's core digital principles: transparent APIs, compreh
 ### 🎯 What is MCP?
 
 Model Context Protocol (MCP) is an open protocol that standardizes how AI applications connect with external data sources and tools. Estonia AI Kit implements MCP servers for various Estonian government services, making them accessible to AI models like Claude, GPT, and others.
+
+> [!IMPORTANT]
+> This project is **constantly evolving** as we work to integrate more Estonian government services and improve existing implementations. Current functionality varies by package:
+>
+> | Package                                                   | Status     | Data Source                            | Ready for Use?                  |
+> | --------------------------------------------------------- | ---------- | -------------------------------------- | ------------------------------- |
+> | **[RIK](https://ariregister.rik.ee)** (Business Register) | ✅ Working | Real open data files (daily snapshots) | ✅ Yes - requires data download |
+> | **[EMTA](https://www.emta.ee)** (Tax & Customs)           | 🚧 WIP     | Mock data (POC demonstration)          | ❌ No - X-Road auth needed      |
+> | **[Open Data](https://andmed.stat.ee)** Portal            | ✅ Working | Statistics Estonia API (real data)     | ✅ Yes - statistics data        |
+>
+> **For RIK Package Users:**
+>
+> 1. Run `bun run download-data` in the RIK package to fetch real data files
+> 2. Data is from daily snapshots (not real-time)
+> 3. Personal ID numbers are removed for privacy (since Nov 2024)
+>
+> **This is experimental software** intended for:
+>
+> - Learning and experimentation
+> - Development reference
+> - Community contribution
+> - Testing MCP server implementations
+>
+> **For development/experimental purposes only.**
 
 ## ⚡ Technical Stack
 
