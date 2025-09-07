@@ -38,13 +38,18 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "download-data": "node scripts/download-data.js",
+    "postinstall": "echo '📥 Run npm run download-data to fetch RIK open data files'"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@types/cheerio": "^0.22.35",
     "axios": "^1.7.0",
-    "soap": "^1.1.0",
-    "node-cache": "^5.1.2"
+    "cheerio": "^1.1.2",
+    "csv-parse": "^5.5.0",
+    "node-cache": "^5.1.2",
+    "soap": "^1.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
