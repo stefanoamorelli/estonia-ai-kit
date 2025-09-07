@@ -2,13 +2,13 @@
 
 ## Estonian Business Register MCP Server
 
-Connect AI assistants to Estonia's Business Register (Äriregister) with **358,465 companies** and **503,453 board members** in a blazing-fast SQLite database.
+Connect AI assistants to Estonia's Business Register (Äriregister) with a comprehensive dataset of Estonian companies and board members in a blazing-fast SQLite database.
 
 > [!NOTE]
 > Part of the [Estonia AI Kit](https://github.com/stefanoamorelli/estonia-ai-kit) monorepo - The Digital Nation's AI Toolkit
 
 > [!IMPORTANT]
-> **New in v1.1.0**: SQLite database with 358k+ companies and 503k+ board members for instant queries!
+> **New in v1.1.0**: SQLite database with extensive company and board member data for instant queries!
 > 
 > This server uses downloadable open data files and builds a local SQLite database for lightning-fast searches.
 
@@ -33,7 +33,7 @@ This downloads:
 - 🏢 4.3GB - General company data (JSON)
 - 🔍 328MB - Beneficial owners (JSON)
 
-And creates a **198MB SQLite database** with instant search capabilities!
+And creates a compact SQLite database with instant search capabilities!
 
 ### Step 2: Configure Claude Desktop
 
@@ -53,7 +53,7 @@ Add to `~/.config/Claude/claude_desktop_config.json` (Linux) or `~/Library/Appli
 ## 🎯 What You Can Ask
 
 ### 🏢 Company Searches
-- "Show me companies at Sepapaja tn 6" → Returns 4,477 companies!
+- "Show me companies at Sepapaja tn 6"
 - "Find all companies with 'crypto' in their name"
 - "List companies registered in 2024"
 - "Show companies in liquidation status"
@@ -66,8 +66,8 @@ Add to `~/.config/Claude/claude_desktop_config.json` (Linux) or `~/Library/Appli
 - "Show companies that share board members with Pipedrive"
 
 ### 📊 Statistical Analysis
-- "How many companies are registered in Estonia?" → 358,465
-- "How many board members in total?" → 503,453
+- "How many companies are registered in Estonia?"
+- "How many board members in total?"
 - "Distribution of companies by legal form (OÜ, AS, MTÜ)"
 - "Most popular addresses for company registration"
 
@@ -81,7 +81,7 @@ Add to `~/.config/Claude/claude_desktop_config.json` (Linux) or `~/Library/Appli
 
 ### What Works Great
 ✅ **Lightning Fast** - SQLite database with proper indexing  
-✅ **Comprehensive** - 358,465 companies, 503,453 board members  
+✅ **Comprehensive** - Extensive dataset of Estonian companies and board members  
 ✅ **Rich Data** - Names, addresses, VAT numbers, status, registration dates  
 ✅ **Board Members** - Full names, roles, start/end dates  
 ✅ **Address Search** - Find all companies at any address  
@@ -98,8 +98,8 @@ Add to `~/.config/Claude/claude_desktop_config.json` (Linux) or `~/Library/Appli
 
 | Table | Records | Description |
 |-------|---------|-------------|
-| companies | 358,465 | All Estonian companies |
-| board_members | 503,453 | Current and historical board members |
+| companies | Partial dataset | Estonian companies |
+| board_members | Partial dataset | Current and historical board members |
 | shareholders | Available | Company ownership data |
 | beneficial_owners | Available | Ultimate beneficial owners |
 | company_general_data | Available | Extended company information |
