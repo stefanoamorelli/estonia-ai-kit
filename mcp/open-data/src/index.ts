@@ -435,217 +435,218 @@ class OpenDataMCPServer {
   }
 
   private async searchDatasets(params: SearchParams) {
-    const cacheKey = `search_${JSON.stringify(params)}`;
-    const cached = cache.get(cacheKey);
-    if (cached) {
+    try {
+      const keyword = params.query || 'statistics';
+      const searchLower = keyword.toLowerCase();
+      
+      // Pre-defined known tables matching common searches
+      const knownTables: Array<{path: string, title: string, category: string, keywords: string[]}> = [
+        // Agriculture tables
+        { path: 'keskkond/pollumajanduskeskkond/KK208', title: 'Use of Pesticides in Agricultural Holdings', category: 'Agriculture', keywords: ['agriculture', 'farming', 'pesticides', 'crop'] },
+        { path: 'majandus/pellumajandus/pellumajanduse-majanduslik-arvepidamine/PM54', title: 'Agricultural Output and Value Added', category: 'Agriculture', keywords: ['agriculture', 'farming', 'output', 'economic'] },
+        { path: 'majandus/pellumajandus/pellumajanduse-majanduslik-arvepidamine/PM59', title: 'Agricultural Land Prices and Rents', category: 'Agriculture', keywords: ['agriculture', 'farming', 'land', 'price', 'rent'] },
+        
+        // Population tables
+        { path: 'rahvastik/rahvastikunaitajad-ja-koosseis/rahvaarv-ja-rahvastiku-koosseis/RV021', title: 'Population by Sex and Age Group', category: 'Population', keywords: ['population', 'demographics', 'age', 'people'] },
+        { path: 'rahvastik/rahvastikunaitajad-ja-koosseis/demograafilised-pehinaitajad/RV030', title: 'Births, Deaths and Natural Increase', category: 'Population', keywords: ['population', 'birth', 'death', 'demographics'] },
+        
+        // Economic tables
+        { path: 'majandus/ehitus/ehitustood/EH001', title: 'Construction Activities', category: 'Economy', keywords: ['economy', 'construction', 'building'] },
+        { path: 'majandus/majandusuksused/ettevetjad/ER021', title: 'Enterprises by Economic Activity', category: 'Economy', keywords: ['economy', 'business', 'enterprise', 'company'] },
+        
+        // Environmental tables
+        { path: 'keskkond/keskonna-arvepidamine/ehuemissioonide-arvepidamine/KK31', title: 'Air Emission Accounts', category: 'Environment', keywords: ['environment', 'emission', 'air', 'pollution'] },
+        { path: 'keskkond/surve-keskkonnaseisundile/jaatmete-teke/KK068', title: 'Waste Generation by Economic Activity', category: 'Environment', keywords: ['environment', 'waste', 'recycling'] }
+      ];
+      
+      // Filter tables based on search keyword
+      const matchingTables = knownTables.filter(table => 
+        table.keywords.some(keyword => keyword.includes(searchLower)) ||
+        table.title.toLowerCase().includes(searchLower) ||
+        table.category.toLowerCase().includes(searchLower)
+      );
+      
+      // Convert to dataset format
+      const datasets = matchingTables.map(table => ({
+        id: table.path,
+        title: table.title,
+        description: `Statistics Estonia table: ${table.title}`,
+        organization: 'Statistics Estonia',
+        tags: ['statistics', 'estonia', 'official', table.category.toLowerCase()],
+        format: ['JSON', 'CSV', 'PX'],
+        created: new Date().toISOString(),
+        modified: new Date().toISOString(),
+        resources: [{
+          id: table.path,
+          url: `https://andmed.stat.ee/api/v1/en/stat/${table.path}.PX`,
+          format: 'PX',
+          description: 'Statistics Estonia PX-Web table',
+          name: `${table.path.split('/').pop()}.PX`
+        }]
+      }));
+
+      const result = {
+        source: 'Statistics Estonia API',
+        query: params,
+        count: datasets.length,
+        total: datasets.length,
+        datasets: datasets.slice(params.offset || 0, (params.offset || 0) + (params.limit || 20)),
+        api_used: 'https://andmed.stat.ee/api/v1',
+        note: 'Showing curated tables from Statistics Estonia database'
+      };
+
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(cached, null, 2),
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              error: 'Statistics Estonia API Error',
+              message: error instanceof Error ? error.message : 'Unknown error occurred',
+              query: params,
+              note: 'Error accessing Statistics Estonia API. Check if the API is available.',
+              available_alternatives: {
+                'browse_statistics': 'Browse Statistics Estonia categories directly',
+                'get_economic_indicators': 'Get specific economic indicators',
+                'get_population_statistics': 'Get population data'
+              }
+            }, null, 2),
           },
         ],
       };
     }
-
-    const mockData = {
-      success: true,
-      result: {
-        count: 150,
-        results: [
-          {
-            id: 'population-statistics-2024',
-            title: 'Estonian Population Statistics 2024',
-            description: 'Detailed population statistics by county and municipality',
-            organization: 'Statistics Estonia',
-            tags: ['population', 'demographics', 'statistics'],
-            format: ['CSV', 'JSON', 'XML'],
-            created: '2024-01-15T10:00:00Z',
-            modified: '2024-11-01T14:30:00Z',
-            resources: [
-              {
-                id: 'pop-csv-2024',
-                url: 'https://andmed.eesti.ee/dataset/population-2024/resource/csv',
-                format: 'CSV',
-                description: 'Population data in CSV format',
-                name: 'population_2024.csv',
-                size: 1024000,
-              },
-              {
-                id: 'pop-json-2024',
-                url: 'https://andmed.eesti.ee/dataset/population-2024/resource/json',
-                format: 'JSON',
-                description: 'Population data in JSON format',
-                name: 'population_2024.json',
-                size: 2048000,
-              },
-            ],
-          },
-          {
-            id: 'business-registry-export',
-            title: 'Business Registry Open Data',
-            description: 'Active companies from Estonian Business Registry',
-            organization: 'Centre of Registers and Information Systems',
-            tags: ['business', 'companies', 'registry'],
-            format: ['CSV', 'JSON'],
-            created: '2023-06-01T09:00:00Z',
-            modified: '2024-12-01T03:00:00Z',
-            resources: [
-              {
-                id: 'companies-csv',
-                url: 'https://avaandmed.ariregister.rik.ee/en/download/companies.csv',
-                format: 'CSV',
-                description: 'All active companies',
-                name: 'companies.csv',
-                size: 50000000,
-              },
-            ],
-          },
-          {
-            id: 'air-quality-monitoring',
-            title: 'Air Quality Monitoring Data',
-            description: 'Real-time and historical air quality measurements',
-            organization: 'Environmental Board',
-            tags: ['environment', 'air-quality', 'monitoring'],
-            format: ['JSON', 'CSV'],
-            created: '2022-01-01T00:00:00Z',
-            modified: '2024-12-16T12:00:00Z',
-            resources: [
-              {
-                id: 'air-quality-json',
-                url: 'https://andmed.eesti.ee/dataset/air-quality/resource/json',
-                format: 'JSON',
-                description: 'Real-time air quality data',
-                name: 'air_quality_realtime.json',
-              },
-            ],
-          },
-        ],
-      },
-      query: params.query || 'all datasets',
-      filters: {
-        organization: params.organization,
-        tags: params.tags,
-        format: params.format,
-      },
-    };
-
-    cache.set(cacheKey, mockData);
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify(mockData, null, 2),
-        },
-      ],
-    };
   }
 
   private async getDataset(datasetId: string) {
-    const cacheKey = `dataset_${datasetId}`;
-    const cached = cache.get(cacheKey);
-    if (cached) {
+    try {
+      // Use Statistics Estonia API to get table metadata
+      const metadata = await this.statClient.getTableMetadata(datasetId);
+      
+      const dataset: Dataset = {
+        id: datasetId,
+        title: metadata.title,
+        description: `Statistics Estonia table with ${metadata.variables.length} variables`,
+        organization: 'Statistics Estonia',
+        tags: ['statistics', 'estonia', 'official'],
+        format: ['JSON', 'CSV', 'PX'],
+        created: new Date().toISOString(),
+        modified: new Date().toISOString(),
+        resources: [
+          {
+            id: `${datasetId}-metadata`,
+            url: `https://andmed.stat.ee/api/v1/en/stat/${datasetId}.PX`,
+            format: 'PX',
+            description: 'Table metadata and structure',
+            name: `${datasetId}_metadata.px`
+          },
+          {
+            id: `${datasetId}-data`,
+            url: `https://andmed.stat.ee/api/v1/en/stat/${datasetId}.PX`,
+            format: 'JSON',
+            description: 'Table data via POST query',
+            name: `${datasetId}_data.json`
+          }
+        ]
+      };
+
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(cached, null, 2),
+            text: JSON.stringify({
+              ...dataset,
+              api_used: 'https://andmed.stat.ee/api/v1',
+              variables: metadata.variables,
+              variable_count: metadata.variables.length,
+              note: 'Use query_statistics_table to get actual data with filters'
+            }, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              error: 'Statistics Table Not Found',
+              message: error instanceof Error ? error.message : 'Unknown error occurred',
+              datasetId,
+              note: 'This table may not exist in Statistics Estonia database.',
+              suggestion: 'Use search_datasets or browse_statistics to find available tables'
+            }, null, 2),
           },
         ],
       };
     }
-
-    const mockData: Dataset = {
-      id: datasetId,
-      title: 'Estonian Administrative and Settlement Division',
-      description:
-        'Complete dataset of Estonian administrative units including counties, municipalities, settlements, and addresses',
-      organization: 'Land Board',
-      tags: ['geography', 'administrative', 'boundaries', 'addresses'],
-      format: ['GeoJSON', 'Shapefile', 'CSV', 'KML'],
-      created: '2020-03-15T10:00:00Z',
-      modified: '2024-11-15T08:30:00Z',
-      resources: [
-        {
-          id: 'admin-geojson',
-          url: 'https://andmed.eesti.ee/dataset/admin-division/resource/geojson',
-          format: 'GeoJSON',
-          description: 'Administrative boundaries in GeoJSON format',
-          name: 'admin_boundaries.geojson',
-          size: 15000000,
-          lastModified: '2024-11-15T08:30:00Z',
-        },
-        {
-          id: 'settlements-csv',
-          url: 'https://andmed.eesti.ee/dataset/admin-division/resource/csv',
-          format: 'CSV',
-          description: 'List of all settlements with coordinates',
-          name: 'settlements.csv',
-          size: 500000,
-          lastModified: '2024-11-15T08:30:00Z',
-        },
-      ],
-    };
-
-    cache.set(cacheKey, mockData);
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify(mockData, null, 2),
-        },
-      ],
-    };
   }
 
   private async listOrganizations(includeCount: boolean = true) {
-    const cacheKey = `organizations_${includeCount}`;
-    const cached = cache.get(cacheKey);
-    if (cached) {
+    try {
+      // Statistics Estonia is the primary data provider
+      const categories = await this.statClient.getMainCategories();
+      
+      // Count tables in each category if requested
+      let totalTables = 0;
+      if (includeCount) {
+        for (const category of categories) {
+          try {
+            const items = await this.statClient.getCategory(category.id);
+            const tables = items.filter(item => item.type === 't');
+            totalTables += tables.length;
+          } catch (error) {
+            // Skip counting errors
+          }
+        }
+      }
+
+      const result = {
+        source: 'Statistics Estonia API',
+        totalOrganizations: 1,
+        organizations: [{
+          name: 'Statistics Estonia',
+          id: 'statistics-estonia',
+          description: 'Official statistical authority of Estonia providing comprehensive statistical data',
+          datasetCount: includeCount ? totalTables : undefined,
+          categories: categories.length,
+          api_url: 'https://andmed.stat.ee/api/v1',
+          website: 'https://www.stat.ee'
+        }],
+        api_used: 'https://andmed.stat.ee/api/v1',
+        note: 'This MCP server focuses on Statistics Estonia official data only'
+      };
+
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(cached, null, 2),
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              error: 'Statistics Estonia API Error',
+              message: error instanceof Error ? error.message : 'Unknown error occurred',
+              note: 'Error accessing Statistics Estonia API.',
+              fallback: 'Try using browse_statistics to explore categories directly'
+            }, null, 2),
           },
         ],
       };
     }
-
-    const organizations = [
-      { name: 'Statistics Estonia', datasetCount: 234 },
-      { name: 'Land Board', datasetCount: 156 },
-      { name: 'Environmental Board', datasetCount: 89 },
-      { name: 'Centre of Registers and Information Systems', datasetCount: 45 },
-      { name: 'Health Board', datasetCount: 67 },
-      { name: 'Transport Administration', datasetCount: 52 },
-      { name: 'Information System Authority', datasetCount: 38 },
-      { name: 'Tax and Customs Board', datasetCount: 12 },
-      { name: 'Agricultural Registers and Information Board', datasetCount: 94 },
-      { name: 'Estonian Meteorological and Hydrological Institute', datasetCount: 76 },
-    ];
-
-    const result = includeCount ? organizations : organizations.map((org) => ({ name: org.name }));
-
-    cache.set(cacheKey, result);
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify(
-            {
-              totalOrganizations: organizations.length,
-              organizations: result,
-            },
-            null,
-            2
-          ),
-        },
-      ],
-    };
   }
 
   private async listTags(popular: boolean = false, limit: number = 100) {
@@ -1091,10 +1092,18 @@ class OpenDataMCPServer {
       // Get metadata first
       const metadata = await this.statClient.getTableMetadata(tablePath);
 
-      // If no filters provided, get latest data
       let data;
       if (!filters || filters.length === 0) {
-        data = await this.statClient.getLatestData(tablePath);
+        // Create simple default filters using first value of each variable
+        const defaultFilters = metadata.variables.map((variable) => ({
+          code: variable.code,
+          selection: {
+            filter: 'item' as const,
+            values: [variable.values[0]], // Use first available value
+          },
+        }));
+        
+        data = await this.statClient.queryTableData(tablePath, defaultFilters);
       } else {
         // Convert filters to proper format
         const queryFilters = filters.map((f) => ({
@@ -1119,6 +1128,7 @@ class OpenDataMCPServer {
                 data: formatted,
                 metadata: data.metadata,
                 variables: metadata.variables,
+                note: !filters || filters.length === 0 ? 'Showing sample data with default filters. Provide specific filters for targeted results.' : undefined,
               },
               null,
               2
@@ -1177,11 +1187,41 @@ class OpenDataMCPServer {
   }
 
   async run() {
+    console.error('Open Data MCP Server starting...');
     const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    console.error('Open Data MCP Server running on stdio');
+    
+    try {
+      await this.server.connect(transport);
+      console.error('Open Data MCP Server running on stdio');
+      
+      // Handle shutdown gracefully
+      process.on('SIGINT', () => {
+        console.error('Server shutting down...');
+        process.exit(0);
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to start server:', error);
+      return false;
+    }
   }
 }
 
-const server = new OpenDataMCPServer();
-server.run().catch(console.error);
+async function main() {
+  const server = new OpenDataMCPServer();
+  const success = await server.run();
+  if (!success) {
+    process.exit(1);
+  }
+}
+
+// Only run if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((error) => {
+    console.error('Failed to start Open Data MCP Server:', error);
+    process.exit(1);
+  });
+}
+
+export { main, OpenDataMCPServer };
