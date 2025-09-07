@@ -679,11 +679,41 @@ class EMTAMCPServer {
   }
 
   async run() {
+    console.error('EMTA MCP Server starting...');
     const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    console.error('EMTA MCP Server running on stdio');
+    
+    try {
+      await this.server.connect(transport);
+      console.error('EMTA MCP Server running on stdio');
+      
+      // Handle shutdown gracefully
+      process.on('SIGINT', () => {
+        console.error('Server shutting down...');
+        process.exit(0);
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to start server:', error);
+      return false;
+    }
   }
 }
 
-const server = new EMTAMCPServer();
-server.run().catch(console.error);
+async function main() {
+  const server = new EMTAMCPServer();
+  const success = await server.run();
+  if (!success) {
+    process.exit(1);
+  }
+}
+
+// Only run if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((error) => {
+    console.error('Failed to start EMTA MCP Server:', error);
+    process.exit(1);
+  });
+}
+
+export { main };
