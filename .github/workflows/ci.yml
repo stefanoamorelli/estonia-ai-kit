@@ -36,7 +36,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          bun install --frozen-lockfile
+          npm ci
           npx nx daemon --stop || true
 
       - name: Lint affected projects
@@ -73,7 +73,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          bun install --frozen-lockfile
+          npm ci
           npx nx daemon --stop || true
 
       - name: Run affected tests
@@ -113,7 +113,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          bun install --frozen-lockfile
+          npm ci
           npx nx daemon --stop || true
 
       - name: Build affected projects
@@ -179,7 +179,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          bun install --frozen-lockfile
+          npm ci
           npx nx daemon --stop || true
 
       - name: Build packages
