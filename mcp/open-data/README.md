@@ -9,23 +9,26 @@ Access 2,000+ government datasets through Estonia's Open Data Portal API with bu
 
 > [!IMPORTANT]
 > This package provides **real data access to Statistics Estonia (andmed.stat.ee)** API with access to 3,000+ statistical tables.
-> 
+>
 > **Currently Supported:**
+>
 > - ✅ **Statistics Estonia API**: Official Estonian statistics database
 > - 📊 Population, economic indicators, demographics, and more
 > - 🎯 No authentication required for public data
 > - 📈 Real-time access to government statistical data
-> 
+>
 > **Working Features:**
+>
 > - Population statistics by year and demographic groups
 > - Economic indicators (GDP, unemployment, wages)
 > - Browse statistical categories and tables
 > - Query specific statistical tables with filters
 > - Format and export statistical data
-> 
+>
 > **Note:** Currently only Statistics Estonia (andmed.stat.ee) is implemented. Support for additional Estonian open data sources is welcome - PRs are encouraged!
-> 
+>
 > **API Documentation:**
+>
 > - Statistics Estonia: https://andmed.stat.ee/help/api-manual.pdf
 
 ### Dataset Coverage

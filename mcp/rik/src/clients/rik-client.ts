@@ -13,16 +13,17 @@ export class RIKApiClient {
     this.client = axios.create({
       timeout: 30000,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9',
         'Accept-Encoding': 'gzip, deflate, br',
-        'DNT': '1',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1'
+        DNT: '1',
+        Connection: 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
       },
       maxRedirects: 10,
-      validateStatus: (status) => status < 500
+      validateStatus: (status) => status < 500,
     });
 
     this.cache = new NodeCache({
@@ -41,7 +42,7 @@ export class RIKApiClient {
       if (params.registryCode) {
         const directUrl = `${this.ARIREGISTER_API}/eng/company/${params.registryCode}`;
         const response = await this.client.get(directUrl);
-        
+
         if (response.status === 200) {
           const results = this.parseDirectCompanyPage(response.data, params.registryCode);
           if (results.length > 0) {
@@ -190,7 +191,7 @@ export class RIKApiClient {
 
   private parseDirectCompanyPage(html: string, registryCode: string): any[] {
     const $ = cheerio.load(html);
-    
+
     // Check if we're on the search form page (not found)
     if ($('form#search_form').length > 0 && !html.includes(registryCode)) {
       return [];
@@ -199,15 +200,17 @@ export class RIKApiClient {
     // Extract basic company info from the page
     const title = $('title').text();
     const pageText = $('body').text();
-    
+
     // If the registry code appears in the page, we likely have company data
     if (pageText.includes(registryCode)) {
-      return [{
-        registry_code: registryCode,
-        name: 'Company data available - Please use specific methods for detailed information',
-        status: 'Found',
-        url: `${this.ARIREGISTER_API}/eng/company/${registryCode}`
-      }];
+      return [
+        {
+          registry_code: registryCode,
+          name: 'Company data available - Please use specific methods for detailed information',
+          status: 'Found',
+          url: `${this.ARIREGISTER_API}/eng/company/${registryCode}`,
+        },
+      ];
     }
 
     return [];
@@ -222,42 +225,44 @@ export class RIKApiClient {
       const link = $(elem);
       const href = link.attr('href');
       const text = link.text().trim();
-      
+
       if (href && text && !text.includes('Search')) {
         const registryCodeMatch = href.match(/\/company\/(\d+)/);
         if (registryCodeMatch) {
           results.push({
             registry_code: registryCodeMatch[1],
             name: text,
-            url: `${this.ARIREGISTER_API}${href}`
+            url: `${this.ARIREGISTER_API}${href}`,
           });
         }
       }
     });
 
     // Also look for table-based results
-    $('table').find('tr').each((i, row) => {
-      const cells = $(row).find('td');
-      if (cells.length >= 2) {
-        const possibleCode = cells.eq(0).text().trim();
-        const possibleName = cells.eq(1).text().trim();
-        
-        if (/^\d{8}$/.test(possibleCode)) {
-          results.push({
-            registry_code: possibleCode,
-            name: possibleName || 'Unknown',
-            status: cells.eq(2)?.text().trim() || 'Unknown'
-          });
+    $('table')
+      .find('tr')
+      .each((i, row) => {
+        const cells = $(row).find('td');
+        if (cells.length >= 2) {
+          const possibleCode = cells.eq(0).text().trim();
+          const possibleName = cells.eq(1).text().trim();
+
+          if (/^\d{8}$/.test(possibleCode)) {
+            results.push({
+              registry_code: possibleCode,
+              name: possibleName || 'Unknown',
+              status: cells.eq(2)?.text().trim() || 'Unknown',
+            });
+          }
         }
-      }
-    });
+      });
 
     return results;
   }
 
   private parseCompanyDetails(html: string, registryCode: string): CompanyData {
     const $ = cheerio.load(html);
-    
+
     // Default structure
     const details: CompanyData = {
       registry_code: registryCode,
@@ -286,7 +291,7 @@ export class RIKApiClient {
     $('dt, th').each((i, elem) => {
       const label = $(elem).text().trim().toLowerCase();
       const value = $(elem).next('dd, td').text().trim();
-      
+
       if (label.includes('status') && value) {
         details.status = value.substring(0, 10);
         details.status_text = value;
@@ -314,7 +319,7 @@ export class RIKApiClient {
       const link = $(elem);
       const href = link.attr('href');
       const text = link.text().trim();
-      
+
       // Extract year from text or href
       const yearMatch = (text + href).match(/20\d{2}/);
       if (yearMatch) {
@@ -322,25 +327,27 @@ export class RIKApiClient {
           year: parseInt(yearMatch[0]),
           submitted_date: new Date().toISOString().split('T')[0],
           status: 'Submitted',
-          document_url: href?.startsWith('http') ? href : `${this.ARIREGISTER_API}${href}`
+          document_url: href?.startsWith('http') ? href : `${this.ARIREGISTER_API}${href}`,
         });
       }
     });
 
     // Look for table-based report listings
-    $('table').find('tr').each((i, row) => {
-      const cells = $(row).find('td');
-      const rowText = cells.text();
-      
-      const yearMatch = rowText.match(/20\d{2}/);
-      if (yearMatch && rowText.toLowerCase().includes('report')) {
-        reports.push({
-          year: parseInt(yearMatch[0]),
-          submitted_date: new Date().toISOString().split('T')[0],
-          status: rowText.toLowerCase().includes('missing') ? 'Missing' : 'Submitted'
-        });
-      }
-    });
+    $('table')
+      .find('tr')
+      .each((i, row) => {
+        const cells = $(row).find('td');
+        const rowText = cells.text();
+
+        const yearMatch = rowText.match(/20\d{2}/);
+        if (yearMatch && rowText.toLowerCase().includes('report')) {
+          reports.push({
+            year: parseInt(yearMatch[0]),
+            submitted_date: new Date().toISOString().split('T')[0],
+            status: rowText.toLowerCase().includes('missing') ? 'Missing' : 'Submitted',
+          });
+        }
+      });
 
     return reports;
   }
@@ -350,22 +357,24 @@ export class RIKApiClient {
     const members: BoardMember[] = [];
 
     // Look for participant/member tables
-    $('table').find('tr').each((i, row) => {
-      const cells = $(row).find('td');
-      if (cells.length >= 2) {
-        const name = cells.eq(0).text().trim();
-        const role = cells.eq(1).text().trim();
-        
-        if (name && !name.includes('Name') && role) {
-          const startDate = cells.eq(2)?.text().trim();
-          members.push({
-            name,
-            role,
-            start_date: startDate || new Date().toISOString().split('T')[0]
-          });
+    $('table')
+      .find('tr')
+      .each((i, row) => {
+        const cells = $(row).find('td');
+        if (cells.length >= 2) {
+          const name = cells.eq(0).text().trim();
+          const role = cells.eq(1).text().trim();
+
+          if (name && !name.includes('Name') && role) {
+            const startDate = cells.eq(2)?.text().trim();
+            members.push({
+              name,
+              role,
+              start_date: startDate || new Date().toISOString().split('T')[0],
+            });
+          }
         }
-      }
-    });
+      });
 
     // Also look for list-based member displays
     $('.participant, .board-member, [class*="member"]').each((i, elem) => {
@@ -377,7 +386,7 @@ export class RIKApiClient {
           members.push({
             name: parts[0].trim(),
             role: parts[1].trim(),
-            start_date: new Date().toISOString().split('T')[0]
+            start_date: new Date().toISOString().split('T')[0],
           });
         }
       }
@@ -389,7 +398,7 @@ export class RIKApiClient {
   private parseTaxDebtStatus(html: string): boolean {
     const $ = cheerio.load(html);
     const pageText = $('body').text().toLowerCase();
-    
+
     // Check for indicators of tax debt
     if (pageText.includes('no tax debt') || pageText.includes('ei ole maksuvõlga')) {
       return false;
@@ -397,7 +406,7 @@ export class RIKApiClient {
     if (pageText.includes('has tax debt') || pageText.includes('maksuvõlg')) {
       return true;
     }
-    
+
     // Default to false if we can't determine
     return false;
   }
@@ -411,18 +420,18 @@ export class RIKApiClient {
       const link = $(elem);
       const href = link.attr('href');
       const companyName = link.text().trim();
-      
+
       // Look for role information nearby
       const parent = link.parent();
       const parentText = parent.text();
-      
+
       if (href && companyName) {
         const registryCodeMatch = href.match(/\/company\/(\d+)/);
         results.push({
           company_name: companyName,
           registry_code: registryCodeMatch ? registryCodeMatch[1] : '',
           role: parentText.replace(companyName, '').trim() || 'Associated',
-          url: href.startsWith('http') ? href : `${this.ARIREGISTER_API}${href}`
+          url: href.startsWith('http') ? href : `${this.ARIREGISTER_API}${href}`,
         });
       }
     });

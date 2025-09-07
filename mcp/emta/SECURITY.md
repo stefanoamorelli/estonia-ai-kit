@@ -11,33 +11,38 @@ This project follows the **Tallinn Secure Software Practices for OSS**, develope
 If you discover a security vulnerability, please report it privately and responsibly.  
 Do not create a public GitHub issue.
 
-**Contact:**  
-- Email: `stefano@amorelli.tech`  
+**Contact:**
 
-We will acknowledge your report within *7 business days* and aim to resolve confirmed issues within 90 days or faster, depending on severity. Credit will be given unless anonymity is requested.
+- Email: `stefano@amorelli.tech`
+
+We will acknowledge your report within _7 business days_ and aim to resolve confirmed issues within 90 days or faster, depending on severity. Credit will be given unless anonymity is requested.
 
 ---
 
 ## Secure Development Practices
 
 ### Secrets and Credentials
+
 - Never commit secrets (API keys, passwords, tokens) to the codebase.
 - Use environment variables or secret managers (e.g., Vault, GitHub Actions secrets).
 - Enable secret scanning and use pre-commit hooks to prevent accidental leaks.
 
 ### Dependencies and Supply Chain
+
 - Pin dependencies and avoid using unmaintained packages.
 - Use automated tools (e.g., Dependabot, OSV Scanner) to identify known vulnerabilities.
 - Review and verify new dependencies before adding them.
 - Consider generating an SBOM (Software Bill of Materials) for major releases.
 
 ### Code and Commit Hygiene
+
 - All changes must go through pull requests with at least one code review.
 - Protect the main branch (e.g., require PRs, reviews, passing CI).
 - Encourage signed commits and signed release tags.
 - Avoid force-pushes and direct commits to protected branches.
 
 ### CI/CD and Build Security
+
 - Run builds in isolated, ephemeral environments.
 - Use least-privilege CI tokens and restrict access to secrets.
 - Review third-party CI/CD actions and pin versions or SHAs.

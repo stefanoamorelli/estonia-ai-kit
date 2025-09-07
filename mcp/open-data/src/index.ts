@@ -323,7 +323,8 @@ class OpenDataMCPServer {
             properties: {
               tablePath: {
                 type: 'string',
-                description: 'Full table path (e.g., "rahvastik/rahvastikunaitajad-ja-koosseis/rahvaarv-ja-rahvastiku-koosseis/RV021")',
+                description:
+                  'Full table path (e.g., "rahvastik/rahvastikunaitajad-ja-koosseis/rahvaarv-ja-rahvastiku-koosseis/RV021")',
               },
               filters: {
                 type: 'array',
@@ -403,19 +404,16 @@ class OpenDataMCPServer {
             return await this.browseStatistics(args.path as string);
 
           case 'get_population_statistics':
-            return await this.getPopulationStatistics(args.year as string || '2024');
+            return await this.getPopulationStatistics((args.year as string) || '2024');
 
           case 'get_economic_indicators':
             return await this.getEconomicIndicators(
               args.indicator as string,
-              args.year as string || '2024'
+              (args.year as string) || '2024'
             );
 
           case 'query_statistics_table':
-            return await this.queryStatisticsTable(
-              args.tablePath as string,
-              args.filters as any[]
-            );
+            return await this.queryStatisticsTable(args.tablePath as string, args.filters as any[]);
 
           case 'search_statistics_tables':
             return await this.searchStatisticsTables(args.keyword as string);
@@ -972,7 +970,7 @@ class OpenDataMCPServer {
               {
                 source: 'Statistics Estonia (stat.ee)',
                 categories: categories,
-                note: 'Use browse_statistics with category ID to explore tables'
+                note: 'Use browse_statistics with category ID to explore tables',
               },
               null,
               2
@@ -988,9 +986,9 @@ class OpenDataMCPServer {
   private async browseStatistics(path: string) {
     try {
       const items = await this.statClient.getCategory(path);
-      const tables = items.filter(i => i.type === 't');
-      const folders = items.filter(i => i.type === 'l');
-      
+      const tables = items.filter((i) => i.type === 't');
+      const folders = items.filter((i) => i.type === 'l');
+
       return {
         content: [
           {
@@ -1001,7 +999,7 @@ class OpenDataMCPServer {
                 folders: folders,
                 tables: tables,
                 total_tables: tables.length,
-                total_folders: folders.length
+                total_folders: folders.length,
               },
               null,
               2
@@ -1018,7 +1016,7 @@ class OpenDataMCPServer {
     try {
       const data = await this.statClient.getPopulationByYear(year);
       const formatted = this.statClient.formatDataResponse(data);
-      
+
       return {
         content: [
           {
@@ -1028,7 +1026,7 @@ class OpenDataMCPServer {
                 source: 'Statistics Estonia',
                 year: year,
                 data: formatted,
-                metadata: data.metadata
+                metadata: data.metadata,
               },
               null,
               2
@@ -1045,7 +1043,7 @@ class OpenDataMCPServer {
     try {
       let data;
       let indicatorName;
-      
+
       switch (indicator) {
         case 'gdp':
           data = await this.statClient.getGDP([year]);
@@ -1062,9 +1060,9 @@ class OpenDataMCPServer {
         default:
           throw new Error(`Unknown indicator: ${indicator}`);
       }
-      
+
       const formatted = this.statClient.formatDataResponse(data);
-      
+
       return {
         content: [
           {
@@ -1075,7 +1073,7 @@ class OpenDataMCPServer {
                 indicator: indicatorName,
                 year: year,
                 data: formatted,
-                metadata: data.metadata
+                metadata: data.metadata,
               },
               null,
               2
@@ -1092,25 +1090,25 @@ class OpenDataMCPServer {
     try {
       // Get metadata first
       const metadata = await this.statClient.getTableMetadata(tablePath);
-      
+
       // If no filters provided, get latest data
       let data;
       if (!filters || filters.length === 0) {
         data = await this.statClient.getLatestData(tablePath);
       } else {
         // Convert filters to proper format
-        const queryFilters = filters.map(f => ({
+        const queryFilters = filters.map((f) => ({
           code: f.code,
           selection: {
             filter: 'item' as const,
-            values: f.values
-          }
+            values: f.values,
+          },
         }));
         data = await this.statClient.queryTableData(tablePath, queryFilters);
       }
-      
+
       const formatted = this.statClient.formatDataResponse(data);
-      
+
       return {
         content: [
           {
@@ -1120,7 +1118,7 @@ class OpenDataMCPServer {
                 table: metadata.title,
                 data: formatted,
                 metadata: data.metadata,
-                variables: metadata.variables
+                variables: metadata.variables,
               },
               null,
               2
@@ -1136,7 +1134,7 @@ class OpenDataMCPServer {
   private async searchStatisticsTables(keyword: string) {
     try {
       const results = await this.statClient.searchTables(keyword);
-      
+
       return {
         content: [
           {
@@ -1146,7 +1144,7 @@ class OpenDataMCPServer {
                 search_term: keyword,
                 found: results.length,
                 tables: results,
-                note: 'Use query_statistics_table with table ID to get data'
+                note: 'Use query_statistics_table with table ID to get data',
               },
               null,
               2
@@ -1168,7 +1166,7 @@ class OpenDataMCPServer {
             {
               error: 'Statistics API Error',
               message: error instanceof Error ? error.message : 'Unknown error',
-              note: 'Check if the table path or parameters are correct'
+              note: 'Check if the table path or parameters are correct',
             },
             null,
             2

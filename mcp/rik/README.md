@@ -9,46 +9,54 @@ Connect AI assistants to Estonia's Business Register (Äriregister) for real-tim
 
 > [!IMPORTANT]
 > This package provides access to **real Estonian Business Register data** through downloadable open data files. You'll need to download the data files first (see Getting Started below).
-> 
+>
 > **Current implementation:** Uses the file download approach for accessing business data.
-> 
+>
 > **API access:** Direct [API integration](https://avaandmed.ariregister.rik.ee/en/open-data-api/introduction-api-services) requires authentication and is currently work in progress (not yet released). PRs are welcome!
-> 
+>
 > ## 🚀 Getting Started
-> 
+>
 > **Step 1: Download the data files (required)**
+>
 > ```bash
 > cd mcp/rik
 > bun run download-data
 > ```
+>
 > This downloads ~100MB of data files from the official RIK open data repository.
-> 
+>
 > **Step 2: Use the MCP server**
+>
 > ```bash
 > bun start
 > ```
-> 
+>
 > ## ✅ What Works
+>
 > - Company search by name, registry code, or keyword
 > - Basic company information (name, status, address, VAT number)
 > - Board members and representatives data
 > - Registry statistics
 > - Data availability checking
-> 
+>
 > ## ⚠️ Limitations
+>
 > - **Data freshness**: Daily snapshots (not real-time)
 > - **Privacy**: No personal ID numbers (removed since Nov 2024)
 > - **Annual reports**: Not available in open data
 > - **Tax info**: Requires EMTA authentication
 > - **File size**: ~100MB download required
-> 
+>
 > ## 📓 Data Source
+>
 > Official open data files from: https://avaandmed.ariregister.rik.ee/en/downloading-open-data
+>
 > - Updated daily at source
 > - Free to use without authentication
 > - Includes 300,000+ Estonian companies
-> 
+>
 > ## 🌐 For Real-Time Data
+>
 > - Web portal: https://ariregister.rik.ee
 > - API access: Register at https://avaandmed.ariregister.rik.ee/en
 

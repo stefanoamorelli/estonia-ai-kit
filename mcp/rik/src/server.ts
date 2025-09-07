@@ -29,7 +29,9 @@ export class RIKMCPServer {
     this.apiClient = new RIKApiClient();
     this.openDataClient = new RIKOpenDataClient();
     // Use open data client by default for better reliability
-    this.companyHandlers = new CompanyHandlers(this.useOpenData ? this.openDataClient : this.apiClient);
+    this.companyHandlers = new CompanyHandlers(
+      this.useOpenData ? this.openDataClient : this.apiClient
+    );
     this.setupHandlers();
   }
 

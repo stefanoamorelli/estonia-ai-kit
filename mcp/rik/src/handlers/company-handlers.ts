@@ -59,7 +59,7 @@ export class CompanyHandlers {
         success: false,
         registry_code: registryCode,
         message: 'Annual reports data not available in open data files. Please use the web portal.',
-        portal_url: `https://ariregister.rik.ee/eng/company/${registryCode}/annual_reports`
+        portal_url: `https://ariregister.rik.ee/eng/company/${registryCode}/annual_reports`,
       };
     }
   }
@@ -75,7 +75,8 @@ export class CompanyHandlers {
     } else {
       return {
         registry_code: registryCode,
-        message: 'Tax debt information is not available in open data. This requires EMTA authentication.',
+        message:
+          'Tax debt information is not available in open data. This requires EMTA authentication.',
         checked_at: new Date().toISOString(),
       };
     }

@@ -26,24 +26,26 @@
 
 > [!IMPORTANT]
 > This project is **constantly evolving** as we work to integrate more Estonian government services and improve existing implementations. Current functionality varies by package:
-> 
-> | Package | Status | Data Source | Ready for Use? |
-> |---------|--------|-------------|----------------|
+>
+> | Package                                                   | Status     | Data Source                            | Ready for Use?                  |
+> | --------------------------------------------------------- | ---------- | -------------------------------------- | ------------------------------- |
 > | **[RIK](https://ariregister.rik.ee)** (Business Register) | ✅ Working | Real open data files (daily snapshots) | ✅ Yes - requires data download |
-> | **[EMTA](https://www.emta.ee)** (Tax & Customs) | 🚧 WIP | Mock data (POC demonstration) | ❌ No - X-Road auth needed |
-> | **[Open Data](https://andmed.stat.ee)** Portal | ✅ Working | Statistics Estonia API (real data) | ✅ Yes - statistics data |
-> 
+> | **[EMTA](https://www.emta.ee)** (Tax & Customs)           | 🚧 WIP     | Mock data (POC demonstration)          | ❌ No - X-Road auth needed      |
+> | **[Open Data](https://andmed.stat.ee)** Portal            | ✅ Working | Statistics Estonia API (real data)     | ✅ Yes - statistics data        |
+>
 > **For RIK Package Users:**
+>
 > 1. Run `bun run download-data` in the RIK package to fetch real data files
 > 2. Data is from daily snapshots (not real-time)
 > 3. Personal ID numbers are removed for privacy (since Nov 2024)
-> 
+>
 > **This is experimental software** intended for:
+>
 > - Learning and experimentation
 > - Development reference
 > - Community contribution
 > - Testing MCP server implementations
-> 
+>
 > **NOT suitable for production use** without significant additional development.
 
 ## 🌍 The Estonian Digital Revolution
@@ -72,14 +74,14 @@ Model Context Protocol (MCP) is an open protocol that standardizes how AI applic
 
 Built with modern TypeScript and the Model Context Protocol (MCP) SDK:
 
-| Component           | Technology                            | Purpose                                      |
-| ------------------- | ------------------------------------- | -------------------------------------------- |
-| **MCP Servers**     | TypeScript, @modelcontextprotocol/sdk | AI assistant integration                    |
-| **API Clients**     | Axios, native fetch                   | HTTP/REST communication                     |
-| **Data Processing** | CSV parsing, JSON streaming           | Handle large datasets efficiently            |
-| **Caching**         | node-cache                            | Reduce API calls and improve performance    |
-| **Type Safety**     | TypeScript strict mode                | Full type coverage for reliability          |
-| **Monorepo**        | Nx workspace                          | Consistent tooling and code sharing         |
+| Component           | Technology                            | Purpose                                  |
+| ------------------- | ------------------------------------- | ---------------------------------------- |
+| **MCP Servers**     | TypeScript, @modelcontextprotocol/sdk | AI assistant integration                 |
+| **API Clients**     | Axios, native fetch                   | HTTP/REST communication                  |
+| **Data Processing** | CSV parsing, JSON streaming           | Handle large datasets efficiently        |
+| **Caching**         | node-cache                            | Reduce API calls and improve performance |
+| **Type Safety**     | TypeScript strict mode                | Full type coverage for reliability       |
+| **Monorepo**        | Nx workspace                          | Consistent tooling and code sharing      |
 
 ## 📦 Packages
 

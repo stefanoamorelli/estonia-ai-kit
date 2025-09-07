@@ -9,15 +9,16 @@ Secure X-Road integration with Estonia's Tax and Customs Board (EMTA) for VAT ve
 
 > [!IMPORTANT]
 > This package is a **proof of concept** demonstrating potential EMTA integration. Currently uses mock data to showcase the MCP server structure and capabilities.
-> 
+>
 > **What's needed for real functionality:**
+>
 > - Valid X-Road member registration
-> - PKI certificates from SK ID Solutions  
+> - PKI certificates from SK ID Solutions
 > - Subsystem agreement with EMTA
 > - X-Road authentication implementation
-> 
+>
 > All current responses are simulated and include a note: "X-Road service requires authentication. This is simulated data."
-> 
+>
 > **This is a development POC - not ready for production use.**
 
 ### X-Road Architecture
