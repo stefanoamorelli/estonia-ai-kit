@@ -181,24 +181,46 @@ export class StatEEClient {
   }
 
   /**
-   * Search for tables by keyword
+   * Search for tables by keyword - recursively searches through all categories
    */
-  async searchTables(keyword: string, path: string = ''): Promise<StatEECategory[]> {
+  async searchTables(keyword: string, maxResults: number = 50): Promise<StatEECategory[]> {
     const results: StatEECategory[] = [];
+    const searchKeyword = keyword.toLowerCase();
+    const visited = new Set<string>();
 
-    try {
-      // For now, just search main categories - recursive search would require careful navigation
-      const items = await this.getCategory(path);
-
-      for (const item of items) {
-        if (item.text && item.text.toLowerCase().includes(keyword.toLowerCase())) {
-          results.push(item);
-        }
+    const searchRecursively = async (path: string = '', depth: number = 0): Promise<void> => {
+      if (depth > 4 || results.length >= maxResults || visited.has(path)) {
+        return;
       }
-    } catch (error) {
-      console.error('Search error:', error instanceof Error ? error.message : String(error));
-    }
+      
+      visited.add(path);
 
+      try {
+        const items = await this.getCategory(path);
+
+        for (const item of items) {
+          if (results.length >= maxResults) break;
+
+          if (item.type === 't' && item.text && item.text.toLowerCase().includes(searchKeyword)) {
+            // Found a matching table
+            results.push({
+              id: path ? `${path}/${item.id}` : item.id,
+              type: item.type,
+              text: item.text,
+              updated: item.updated
+            });
+          } else if (item.type === 'l') {
+            // Recursively search folders
+            const newPath = path ? `${path}/${item.id}` : item.id;
+            await searchRecursively(newPath, depth + 1);
+          }
+        }
+      } catch (error) {
+        // Skip errors and continue searching
+      }
+    };
+
+    await searchRecursively();
     return results;
   }
 
