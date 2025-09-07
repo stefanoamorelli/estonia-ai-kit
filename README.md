@@ -24,6 +24,28 @@
 > [!NOTE]
 > This is a community-driven open source project and is not affiliated with, endorsed by, or connected to the Estonian government or any official Estonian institutions.
 
+> [!IMPORTANT]
+> This project is **constantly evolving** as we work to integrate more Estonian government services and improve existing implementations. Current functionality varies by package:
+> 
+> | Package | Status | Data Source | Ready for Use? |
+> |---------|--------|-------------|----------------|
+> | **[RIK](https://ariregister.rik.ee)** (Business Register) | ✅ Working | Real open data files (daily snapshots) | ✅ Yes - requires data download |
+> | **[EMTA](https://www.emta.ee)** (Tax & Customs) | 🚧 WIP | Mock data (POC demonstration) | ❌ No - X-Road auth needed |
+> | **[Open Data](https://andmed.stat.ee)** Portal | ✅ Working | Statistics Estonia API (real data) | ✅ Yes - statistics data |
+> 
+> **For RIK Package Users:**
+> 1. Run `bun run download-data` in the RIK package to fetch real data files
+> 2. Data is from daily snapshots (not real-time)
+> 3. Personal ID numbers are removed for privacy (since Nov 2024)
+> 
+> **This is experimental software** intended for:
+> - Learning and experimentation
+> - Development reference
+> - Community contribution
+> - Testing MCP server implementations
+> 
+> **NOT suitable for production use** without significant additional development.
+
 ## 🌍 The Estonian Digital Revolution
 
 Picture this: A country where 99% of government services are online. Where you can establish a company in 18 minutes. Where blockchain secures healthcare records, and every citizen has a digital identity that works seamlessly across all services. This isn't science fiction—this is Estonia today.
@@ -46,38 +68,18 @@ The toolkit follows Estonia's core digital principles: transparent APIs, compreh
 
 Model Context Protocol (MCP) is an open protocol that standardizes how AI applications connect with external data sources and tools. Estonia AI Kit implements MCP servers for various Estonian government services, making them accessible to AI models like Claude, GPT, and others.
 
-## ⚡ Technical Architecture
+## ⚡ Technical Stack
 
-### Architecture
+Built with modern TypeScript and the Model Context Protocol (MCP) SDK:
 
-| Component            | Tech Stack                            | Purpose                                         |
-| -------------------- | ------------------------------------- | ----------------------------------------------- |
-| **MCP Servers**      | TypeScript, @modelcontextprotocol/sdk | AI model integration with Estonian services     |
-| **API Clients**      | Axios, native fetch                   | HTTP/REST communication with government APIs    |
-| **Caching**          | node-cache                            | Response optimization and rate limit management |
-| **Type Safety**      | TypeScript 5.9, strict mode           | Full type coverage for all API responses        |
-| **Shared Utilities** | Monorepo with Nx                      | Code reuse across MCP servers                   |
-
-### API Coverage
-
-| Service                   | Status         | Endpoints | Rate Limit | Authentication | Cache TTL |
-| ------------------------- | -------------- | --------- | ---------- | -------------- | --------- |
-| **RIK Business Register** | ✅ Implemented | 15+       | 1000/hour  | API Key        | 24h       |
-| **EMTA Tax Board**        | ✅ Implemented | 8+        | 100/min    | X-Road cert    | 1h        |
-| **Open Data Portal**      | ✅ Implemented | 20+       | Unlimited  | None           | 6h        |
-| **Population Register**   | 🤝 PRs welcome | -         | -          | X-Road cert    | -         |
-| **Land Registry**         | 🤝 PRs welcome | -         | -          | X-Road cert    | -         |
-
-### Performance Targets
-
-| Metric             | Target         | Current  |
-| ------------------ | -------------- | -------- |
-| MCP Handshake      | < 10ms         | ✅ 8ms   |
-| API Response (p50) | < 200ms        | ✅ 120ms |
-| API Response (p99) | < 500ms        | ✅ 450ms |
-| Memory Usage       | < 50MB         | ✅ Met   |
-| Bundle Size        | < 100KB/server | ✅ Met   |
-| Test Coverage      | > 80%          | ✅ 85%   |
+| Component           | Technology                            | Purpose                                      |
+| ------------------- | ------------------------------------- | -------------------------------------------- |
+| **MCP Servers**     | TypeScript, @modelcontextprotocol/sdk | AI assistant integration                    |
+| **API Clients**     | Axios, native fetch                   | HTTP/REST communication                     |
+| **Data Processing** | CSV parsing, JSON streaming           | Handle large datasets efficiently            |
+| **Caching**         | node-cache                            | Reduce API calls and improve performance    |
+| **Type Safety**     | TypeScript strict mode                | Full type coverage for reliability          |
+| **Monorepo**        | Nx workspace                          | Consistent tooling and code sharing         |
 
 ## 📦 Packages
 
