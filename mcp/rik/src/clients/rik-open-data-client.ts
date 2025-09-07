@@ -7,6 +7,7 @@ import { pipeline } from 'stream/promises';
 import * as zlib from 'zlib';
 import { parse } from 'csv-parse';
 import { CompanyData, CompanySearchParams, AnnualReport, BoardMember } from '../types/index.js';
+import { fileURLToPath } from 'url';
 
 interface OpenDataFile {
   name: string;
@@ -27,6 +28,9 @@ interface CompanyBasicData {
   indeks_ettevotja_aadressis?: string;
   kmkr_nr?: string;
   ettevotja_oiguslik_vorm?: string;
+  ads_normaliseeritud_taisaadress?: string;
+  ads_adr_id?: string;
+  ads_ads_oid?: string;
   // Legacy field names (for compatibility)
   staatus?: string;
   staatus_tekstina?: string;
@@ -38,7 +42,7 @@ export class RIKOpenDataClient {
   private cache: NodeCache;
   private dataCache: NodeCache;
   private readonly BASE_URL = 'https://avaandmed.ariregister.rik.ee';
-  private readonly DATA_DIR = path.join(process.cwd(), '.rik-data');
+  private readonly DATA_DIR: string;
 
   private readonly OPEN_DATA_FILES: OpenDataFile[] = [
     {
@@ -86,6 +90,10 @@ export class RIKOpenDataClient {
   ];
 
   constructor() {
+    // Set DATA_DIR relative to the compiled JS file location
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    this.DATA_DIR = path.join(__dirname, '../../.rik-data');
+    
     this.client = axios.create({
       baseURL: this.BASE_URL,
       timeout: 60000,
@@ -111,7 +119,7 @@ export class RIKOpenDataClient {
     try {
       await fs.mkdir(this.DATA_DIR, { recursive: true });
     } catch (error) {
-      console.error('Failed to create data directory:', error);
+      // console.error('Failed to create data directory:', error);
     }
   }
 
@@ -205,7 +213,10 @@ export class RIKOpenDataClient {
       let match = false;
 
       const companyName = company.nimi || (company as any)[' nimi'] || ''; // Handle BOM
-      const companyAddress = company.ettevotja_aadress || '';
+      // Use normalized address or location in address, as ettevotja_aadress is often empty
+      const companyAddress = company.ads_normaliseeritud_taisaadress || 
+                            company.asukoht_ettevotja_aadressis || 
+                            company.ettevotja_aadress || '';
 
       if (params.registryCode && company.ariregistri_kood === params.registryCode) {
         match = true;
@@ -213,6 +224,12 @@ export class RIKOpenDataClient {
         params.name &&
         companyName &&
         companyName.toLowerCase().includes(params.name.toLowerCase())
+      ) {
+        match = true;
+      } else if (
+        params.address &&
+        companyAddress &&
+        companyAddress.toLowerCase().includes(params.address.toLowerCase())
       ) {
         match = true;
       } else if (params.query) {
@@ -228,7 +245,9 @@ export class RIKOpenDataClient {
           name: company.nimi || (company as any)[' nimi'] || '', // Handle BOM issue
           status: company.ettevotja_staatus,
           status_text: company.ettevotja_staatus_tekstina,
-          address: company.ettevotja_aadress || '',
+          address: company.ads_normaliseeritud_taisaadress || 
+                  company.asukoht_ettevotja_aadressis || 
+                  company.ettevotja_aadress || '',
           vat_number: company.kmkr_nr,
         });
 
@@ -270,7 +289,7 @@ export class RIKOpenDataClient {
         };
       }
     } catch (error) {
-      console.error('Failed to load general data:', error);
+      // console.error('Failed to load general data:', error);
     }
 
     return {
@@ -286,16 +305,23 @@ export class RIKOpenDataClient {
   async getBoardMembers(registryCode: string): Promise<BoardMember[]> {
     try {
       const boardData = await this.loadJsonData('board_members');
-      const members = boardData.filter((m: any) => m.ariregistri_kood === registryCode);
+      
+      // Find the company entry
+      const companyEntry = boardData.find((entry: any) => entry.ariregistri_kood === registryCode);
+      
+      if (!companyEntry || !companyEntry.kaardile_kantud_isikud) {
+        return [];
+      }
 
-      return members.map((m: any) => ({
-        name: m.isiku_nimi || m.nimi,
-        role: m.isiku_roll || m.roll || 'Board Member',
-        start_date: m.algus_kp || new Date().toISOString().split('T')[0],
-        end_date: m.lopp_kp,
+      // Map the board members from the kaardile_kantud_isikud array
+      return companyEntry.kaardile_kantud_isikud.map((m: any) => ({
+        name: `${m.eesnimi || ''} ${m.nimi_arinimi || ''}`.trim() || 'Unknown',
+        role: m.isiku_roll_tekstina || m.isiku_roll || 'Board Member',
+        start_date: m.algus_kpv || new Date().toISOString().split('T')[0],
+        end_date: m.lopp_kpv || undefined,
       }));
     } catch (error) {
-      console.error('Failed to load board members:', error);
+      // console.error('Failed to load board members:', error);
       return [];
     }
   }
@@ -353,7 +379,7 @@ export class RIKOpenDataClient {
 
       return results;
     } catch (error) {
-      console.error('Failed to search by person:', error);
+      // console.error('Failed to search by person:', error);
       return [];
     }
   }
