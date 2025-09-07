@@ -125,4 +125,20 @@ export const rikTools: Tool[] = [
       },
     },
   },
+  {
+    name: 'get_registry_statistics',
+    description: 'Get statistics about Estonian Business Register',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'check_data_availability',
+    description: 'Check which open data files are available for download',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
 ];

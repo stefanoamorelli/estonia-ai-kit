@@ -5,6 +5,7 @@ export interface CompanySearchParams {
   status?: 'R' | 'K' | 'L' | 'N';
   address?: string;
   field?: string;
+  limit?: number;
 }
 
 export interface CompanyData {
@@ -19,6 +20,9 @@ export interface CompanyData {
   email?: string;
   phone?: string;
   tax_debt?: boolean;
+  vat_number?: string;
+  activity_area?: string;
+  founded_date?: string;
 }
 
 export interface AnnualReport {
