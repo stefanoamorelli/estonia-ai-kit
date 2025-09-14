@@ -12,7 +12,7 @@
       }
     },
     "test": {
-      "executor": "nx:run-commands", 
+      "executor": "nx:run-commands",
       "options": {
         "command": "bun run test:run",
         "cwd": "packages/riigiteataja-api-client"
@@ -21,7 +21,7 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "bun run lint", 
+        "command": "bun run lint",
         "cwd": "packages/riigiteataja-api-client"
       }
     },
@@ -29,7 +29,7 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "bun run typecheck",
-        "cwd": "packages/riigiteataja-api-client" 
+        "cwd": "packages/riigiteataja-api-client"
       }
     }
   }

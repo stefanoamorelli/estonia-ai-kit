@@ -55,9 +55,9 @@ const searchResults = await client.searchLaws({
 ### Advanced Configuration
 
 ```typescript
-import { 
-  RiigiteatajaApiFetcher, 
-  RiigiteatajaEnglishFetcher 
+import {
+  RiigiteatajaApiFetcher,
+  RiigiteatajaEnglishFetcher
 } from '@estonia-ai-kit/riigiteataja-api-client';
 
 // Configure API fetcher with custom settings
@@ -97,12 +97,12 @@ Primary client interface for document retrieval.
 
 #### Methods
 
-| Method | Description |
-|--------|-------------|
-| `fetchDocument(globalId, language)` | Retrieve single document by global ID |
-| `searchLaws(params)` | Search Estonian legislative database |
-| `searchEnglishTranslations(limit)` | Discover available English translations |
-| `fetchBilingual(globalId)` | Parallel fetch of both language versions |
+| Method                              | Description                              |
+| ----------------------------------- | ---------------------------------------- |
+| `fetchDocument(globalId, language)` | Retrieve single document by global ID    |
+| `searchLaws(params)`                | Search Estonian legislative database     |
+| `searchEnglishTranslations(limit)`  | Discover available English translations  |
+| `fetchBilingual(globalId)`          | Parallel fetch of both language versions |
 
 ### RiigiteatajaApiFetcher
 
@@ -110,11 +110,11 @@ Direct API client for Estonian documents.
 
 #### Methods
 
-| Method | Description |
-|--------|-------------|
-| `searchLaws(params)` | Query official API endpoint |
+| Method                              | Description                  |
+| ----------------------------------- | ---------------------------- |
+| `searchLaws(params)`                | Query official API endpoint  |
 | `fetchDocument(globalId, language)` | Fetch and parse XML document |
-| `fetchXml(path)` | Retrieve raw XML data |
+| `fetchXml(path)`                    | Retrieve raw XML data        |
 
 ### RiigiteatajaEnglishFetcher
 
@@ -122,21 +122,24 @@ Specialized client for English translation retrieval.
 
 #### Methods
 
-| Method | Description |
-|--------|-------------|
+| Method                             | Description                       |
+| ---------------------------------- | --------------------------------- |
 | `searchEnglishTranslations(limit)` | Discover translation availability |
-| `fetchEnglishDocument(globalId)` | Retrieve English version |
-| `discoverTranslationId(globalId)` | Map global ID to translation ID |
+| `fetchEnglishDocument(globalId)`   | Retrieve English version          |
+| `discoverTranslationId(globalId)`  | Map global ID to translation ID   |
 
 ## Technical Implementation
 
 ### Estonian Document Retrieval
+
 The library interfaces with the official API endpoint at `/api/oigusakt_otsing/1/otsi` for searching and `/akt/{globalId}/xml` for document retrieval. XML responses are parsed and converted to structured TypeScript objects.
 
 ### English Translation Handling
+
 English translations use a hybrid approach combining HTML scraping for ID discovery and XML fetching from `/en/tolge/xml/{translationId}`. The library maintains internal ID mapping between global identifiers and translation identifiers.
 
 ### Error Handling
+
 The library implements comprehensive error handling with automatic retry logic for transient failures. Network timeouts and API rate limits are handled gracefully with exponential backoff strategies.
 
 ## Development
