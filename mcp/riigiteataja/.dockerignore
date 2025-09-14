@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.git/
+.github/
+*.log
+*.md
+.env*
+coverage/
+.vscode/
+.idea/
+tests/
+*.test.ts
+*.spec.ts
+.eslintrc*
+.prettierrc*
+vitest.config.ts
+tsconfig.json

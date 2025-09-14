@@ -1,0 +1,70 @@
+{
+  "name": "@estonia-ai-kit/riigiteataja-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Estonian State Gazette (Riigiteataja) FAQ and legal information",
+  "private": false,
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "riigiteataja-mcp-server": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefanoamorelli/estonia-ai-kit.git",
+    "directory": "mcp/riigiteataja"
+  },
+  "keywords": [
+    "mcp",
+    "estonia",
+    "riigiteataja",
+    "legal",
+    "state-gazette",
+    "ai",
+    "claude"
+  ],
+  "author": {
+    "name": "Stefano Amorelli",
+    "email": "stefano@amorelli.tech",
+    "url": "https://amorelli.tech",
+    "orcid": "https://orcid.org/0009-0004-4917-0999"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write 'src/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts'",
+    "typecheck": "tsc --noEmit",
+    "check": "bun run typecheck && bun run lint && bun run format:check",
+    "check:fix": "bun run typecheck && bun run lint:fix && bun run format"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@estonia-ai-kit/riigiteataja-api-client": "file:../../packages/riigiteataja-api-client"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  }
+}
