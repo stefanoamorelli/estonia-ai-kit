@@ -1,0 +1,80 @@
+{
+  "name": "@estonia-ai-kit/riigiteataja-api-client",
+  "version": "1.0.0",
+  "description": "TypeScript client library for Estonian legal database Riigiteataja.ee API",
+  "private": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "bun run tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "bun run tsup src/index.ts --format cjs,esm --dts --watch",
+    "test": "bun test",
+    "test:vitest": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write 'src/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts'",
+    "typecheck": "tsc --noEmit",
+    "check": "bun run typecheck && bun run lint && bun run format:check",
+    "check:fix": "bun run typecheck && bun run lint:fix && bun run format"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "cheerio": "^1.0.0",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/xml2js": "^0.4.14",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vitest/coverage-v8": "^1.0.4",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.2",
+    "vitest": "^1.0.4"
+  },
+  "keywords": [
+    "riigiteataja",
+    "estonia",
+    "legal",
+    "legislation",
+    "api-client",
+    "law",
+    "translation",
+    "ai"
+  ],
+  "author": {
+    "name": "Stefano Amorelli",
+    "email": "stefano@amorelli.tech",
+    "url": "https://amorelli.tech"
+  },
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefanoamorelli/estonia-ai-kit.git",
+    "directory": "packages/riigiteataja-api-client"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CITATION.cff",
+    "AUTHORS"
+  ]
+}

@@ -70,17 +70,22 @@ jobs:
 
       - name: Publish packages
         run: |
-          # Publish shared package first
-          cd packages/shared
-          npm publish --access public
-          cd ../..
+          # Publish shared packages first
+          for dir in packages/*; do
+            if [ -d "$dir" ] && [ -f "$dir/package.json" ]; then
+              echo "Publishing $dir"
+              cd $dir
+              npm publish --access public || echo "Failed to publish $dir"
+              cd ../..
+            fi
+          done
 
           # Publish MCP servers
           for dir in mcp/*; do
             if [ -d "$dir" ] && [ -f "$dir/package.json" ]; then
               echo "Publishing $dir"
               cd $dir
-              npm publish --access public
+              npm publish --access public || echo "Failed to publish $dir"
               cd ../..
             fi
           done
@@ -89,7 +94,7 @@ jobs:
 
       - name: Create Git tag
         run: |
-          VERSION=$(node -p "require('./mcp/rik/package.json').version")
+          VERSION=$(node -p "require('./mcp/riigiteataja/package.json').version")
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "v$VERSION" -m "Release v$VERSION"
@@ -107,6 +112,8 @@ jobs:
             - @estonia-ai-kit/rik-mcp-server
             - @estonia-ai-kit/emta-mcp-server
             - @estonia-ai-kit/open-data-mcp-server
+            - @estonia-ai-kit/riigiteataja-mcp-server
+            - @estonia-ai-kit/riigiteataja-api-client
             - @estonia-ai-kit/shared
           draft: false
           prerelease: false
