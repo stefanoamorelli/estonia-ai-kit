@@ -33,7 +33,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "vitest run --coverage",
+    "test": "vitest run",
     "test:watch": "vitest watch",
     "lint": "eslint src",
     "clean": "rm -rf dist"
