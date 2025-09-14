@@ -1,0 +1,315 @@
+name: Riigiteataja API Client CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'packages/riigiteataja-api-client/**'
+      - '.github/workflows/riigiteataja-api-client.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'packages/riigiteataja-api-client/**'
+      - '.github/workflows/riigiteataja-api-client.yml'
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Create a release'
+        required: false
+        default: false
+        type: boolean
+      release_type:
+        description: 'Release type (if releasing)'
+        required: false
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test Riigiteataja API Client
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: packages/riigiteataja-api-client
+
+    strategy:
+      matrix:
+        node-version: ['20', '22']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: packages/riigiteataja-api-client/package.json
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Type checking
+        run: bun run typecheck
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Format check
+        run: bun run format:check
+
+      - name: Run tests
+        run: bun run test:run
+
+      - name: Run coverage
+        if: matrix.node-version == '20'
+        run: bun run test:coverage
+
+      - name: Upload coverage to Codecov
+        if: matrix.node-version == '20'
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./packages/riigiteataja-api-client/coverage/lcov.info
+          flags: riigiteataja-api-client
+          name: riigiteataja-api-client
+          fail_ci_if_error: false
+
+  build:
+    name: Build Riigiteataja API Client
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: packages/riigiteataja-api-client
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build package
+        run: bun run build
+
+      - name: Check build outputs
+        run: |
+          echo "Build outputs:"
+          ls -la dist/
+          echo "Bundle sizes:"
+          for file in dist/*.js dist/*.mjs dist/*.d.ts; do
+            if [ -f "$file" ]; then
+              size=$(du -h "$file" | cut -f1)
+              echo "  $(basename $file): $size"
+            fi
+          done
+
+      - name: Validate package
+        run: |
+          npm pack --dry-run
+          echo "Package contents:"
+          npm pack --dry-run --json | jq -r '.[0].files[].path' | sort
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: riigiteataja-api-client-build-${{ github.sha }}
+          path: packages/riigiteataja-api-client/dist
+          retention-days: 7
+
+  integration:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [build]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install and build
+        working-directory: packages/riigiteataja-api-client
+        run: |
+          bun install
+          bun run build
+
+      - name: Test CommonJS import
+        run: |
+          cd /tmp
+          npm init -y
+          npm install ${{ github.workspace }}/packages/riigiteataja-api-client
+          cat > test-cjs.js << 'EOF'
+          const { RiigiteatajaClient } = require('@estonia-ai-kit/riigiteataja-api-client');
+          console.log('✅ CommonJS import successful');
+          console.log('Client:', typeof RiigiteatajaClient);
+          EOF
+          node test-cjs.js
+
+      - name: Test ESM import
+        run: |
+          cd /tmp
+          npm init -y
+          npm install ${{ github.workspace }}/packages/riigiteataja-api-client
+          cat > test-esm.mjs << 'EOF'
+          import { RiigiteatajaClient } from '@estonia-ai-kit/riigiteataja-api-client';
+          console.log('✅ ESM import successful');
+          console.log('Client:', typeof RiigiteatajaClient);
+          EOF
+          node test-esm.mjs
+
+  release:
+    name: Release to NPM
+    runs-on: ubuntu-latest
+    needs: [test, build, integration]
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      github.event.inputs.release == 'true' &&
+      github.ref == 'refs/heads/main'
+
+    defaults:
+      run:
+        working-directory: packages/riigiteataja-api-client
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build package
+        run: bun run build
+
+      - name: Bump version
+        id: version
+        run: |
+          npm version ${{ github.event.inputs.release_type }} --no-git-tag-version
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 New version: $VERSION"
+
+      - name: Update root package-lock
+        working-directory: ${{ github.workspace }}
+        run: |
+          npm install --package-lock-only
+          git add package-lock.json
+
+      - name: Commit version bump
+        working-directory: ${{ github.workspace }}
+        run: |
+          git add packages/riigiteataja-api-client/package.json
+          git commit -m "chore(riigiteataja-api-client): release v${{ steps.version.outputs.version }}"
+
+      - name: Configure npm
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to NPM
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create Git tag
+        working-directory: ${{ github.workspace }}
+        run: |
+          git tag -a "riigiteataja-api-client-v${{ steps.version.outputs.version }}" \
+               -m "Release @estonia-ai-kit/riigiteataja-api-client v${{ steps.version.outputs.version }}"
+          git push origin "riigiteataja-api-client-v${{ steps.version.outputs.version }}"
+
+      - name: Push changes
+        working-directory: ${{ github.workspace }}
+        run: git push origin main
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: riigiteataja-api-client-v${{ steps.version.outputs.version }}
+          name: '@estonia-ai-kit/riigiteataja-api-client v${{ steps.version.outputs.version }}'
+          body: |
+            ## 📦 @estonia-ai-kit/riigiteataja-api-client v${{ steps.version.outputs.version }}
+
+            TypeScript client library for Estonian legal database Riigiteataja.ee API
+
+            ### Installation
+            ```bash
+            bun add @estonia-ai-kit/riigiteataja-api-client@${{ steps.version.outputs.version }}
+            # or
+            npm install @estonia-ai-kit/riigiteataja-api-client@${{ steps.version.outputs.version }}
+            ```
+
+            ### NPM Package
+            https://www.npmjs.com/package/@estonia-ai-kit/riigiteataja-api-client/v/${{ steps.version.outputs.version }}
+
+            ---
+            Part of the [Estonia AI Kit](https://github.com/stefanoamorelli/estonia-ai-kit) monorepo
+          draft: false
+          prerelease: false
+
+      - name: Update Summary
+        run: |
+          echo "# 🚀 Release Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Package:** @estonia-ai-kit/riigiteataja-api-client" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** v${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**NPM:** https://www.npmjs.com/package/@estonia-ai-kit/riigiteataja-api-client" >> $GITHUB_STEP_SUMMARY
