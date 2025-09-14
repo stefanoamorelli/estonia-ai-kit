@@ -285,7 +285,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: riigiteataja-api-client-v${{ steps.version.outputs.version }}
-          name: "@estonia-ai-kit/riigiteataja-api-client v${{ steps.version.outputs.version }}"
+          name: '@estonia-ai-kit/riigiteataja-api-client v${{ steps.version.outputs.version }}'
           body: |
             ## 📦 @estonia-ai-kit/riigiteataja-api-client v${{ steps.version.outputs.version }}
 
