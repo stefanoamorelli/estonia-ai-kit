@@ -6,9 +6,7 @@
     "sourceType": "module",
     "project": ["./tsconfig.json", "./tsconfig.test.json"]
   },
-  "plugins": [
-    "@typescript-eslint"
-  ],
+  "plugins": ["@typescript-eslint"],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
@@ -37,10 +35,5 @@
       }
     }
   ],
-  "ignorePatterns": [
-    "dist/",
-    "node_modules/",
-    "*.js",
-    "*.d.ts"
-  ]
+  "ignorePatterns": ["dist/", "node_modules/", "*.js", "*.d.ts"]
 }

@@ -7,10 +7,7 @@
     "project": ["./tsconfig.json"]
   },
   "plugins": ["@typescript-eslint"],
-  "extends": [
-    "eslint:recommended",
-    "@typescript-eslint/recommended"
-  ],
+  "extends": ["eslint:recommended", "@typescript-eslint/recommended"],
   "env": {
     "node": true,
     "es2022": true
