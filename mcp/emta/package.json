@@ -42,16 +42,16 @@
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "axios": "^1.7.0",
-    "soap": "^1.1.0",
+    "@modelcontextprotocol/sdk": "^1.21.1",
+    "axios": "^1.13.2",
+    "soap": "^1.6.0",
     "node-cache": "^5.1.2",
-    "xml2js": "^0.6.0"
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "@types/xml2js": "^0.4.0",
-    "tsx": "^4.0.0",
-    "typescript": "^5.0.0"
+    "@types/node": "^22.19.0",
+    "@types/xml2js": "^0.4.14",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
   }
 }
