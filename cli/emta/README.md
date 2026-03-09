@@ -5,6 +5,13 @@ CLI for Estonian Tax and Customs Board (EMTA) e-services. Authenticates via Smar
 > [!IMPORTANT]
 > **Unofficial, open source & experimental.** This is a community-driven project, part of [Estonia AI Kit](https://github.com/stefanoamorelli/estonia-ai-kit). It is not affiliated with, endorsed by, or connected to the Estonian Tax and Customs Board (EMTA) or any Estonian government institution. It relies on undocumented web interfaces (HTML parsing, internal redirect chains) that **can break at any time** without notice. Sessions expire after ~30 minutes. Use at your own risk. The authors accept no liability for any issues arising from its use.
 
+> [!WARNING]
+> **Security considerations for agentic use.** If you use this CLI as a skill for an AI agent (e.g., via shell access), be aware that you are granting the agent access to an authenticated government session containing sensitive tax data. Always review agent actions before approving them, and understand the risks of prompt injection and tool misuse in agentic workflows. Read more about agentic AI security:
+>
+> - [OWASP Top 10 for LLM & Generative AI](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+> - [OWASP Agentic AI Threats and Mitigations](https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations/)
+> - [MCP Security: Tool Poisoning Attacks (Invariant Labs)](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks)
+
 ## Prerequisites
 
 - [Go 1.21+](https://go.dev/dl/)
