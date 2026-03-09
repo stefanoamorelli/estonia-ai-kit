@@ -192,7 +192,7 @@ export class StatEEClient {
       if (depth > 4 || results.length >= maxResults || visited.has(path)) {
         return;
       }
-      
+
       visited.add(path);
 
       try {
@@ -207,7 +207,7 @@ export class StatEEClient {
               id: path ? `${path}/${item.id}` : item.id,
               type: item.type,
               text: item.text,
-              updated: item.updated
+              updated: item.updated,
             });
           } else if (item.type === 'l') {
             // Recursively search folders

@@ -9,7 +9,7 @@ Connect AI assistants to Estonia's Business Register (Äriregister) with a compr
 
 > [!IMPORTANT]
 > **New in v1.1.0**: SQLite database with extensive company and board member data for instant queries!
-> 
+>
 > This server uses downloadable open data files and builds a local SQLite database for lightning-fast searches.
 
 ## 🚀 Quick Start
@@ -27,8 +27,9 @@ node scripts/import-board-stream.js
 ```
 
 This downloads:
+
 - 📊 92MB - Basic company data (CSV)
-- 👥 976MB - Board members (JSON) 
+- 👥 976MB - Board members (JSON)
 - 💼 718MB - Shareholders (JSON)
 - 🏢 4.3GB - General company data (JSON)
 - 🔍 328MB - Beneficial owners (JSON)
@@ -53,56 +54,62 @@ Add to `~/.config/Claude/claude_desktop_config.json` (Linux) or `~/Library/Appli
 ## 🎯 What You Can Ask
 
 ### 🏢 Company Searches
+
 - "Show me companies at Sepapaja tn 6"
 - "Find all companies with 'crypto' in their name"
 - "List companies registered in 2024"
 - "Show companies in liquidation status"
 - "Find company details by registry code"
 
-### 👥 Board Member Queries  
+### 👥 Board Member Queries
+
 - "Show board members of a specific company"
 - "Find all companies where [person name] is a board member"
 - "Which person serves on the most company boards?"
 - "Show companies that share board members with Pipedrive"
 
 ### 📊 Statistical Analysis
+
 - "How many companies are registered in Estonia?"
 - "How many board members in total?"
 - "Distribution of companies by legal form (OÜ, AS, MTÜ)"
 - "Most popular addresses for company registration"
 
 ### 🔍 Advanced Detective Work
+
 - "Find all companies at the same address as Bolt"
-- "Companies sharing both address AND board members" 
+- "Companies sharing both address AND board members"
 - "Sequential registry codes (registered same day)"
 - "Foreign-owned companies by board member addresses"
 
 ## ✨ Features
 
 ### What Works Great
+
 ✅ **Lightning Fast** - SQLite database with proper indexing  
 ✅ **Comprehensive** - Extensive dataset of Estonian companies and board members  
 ✅ **Rich Data** - Names, addresses, VAT numbers, status, registration dates  
 ✅ **Board Members** - Full names, roles, start/end dates  
 ✅ **Address Search** - Find all companies at any address  
 ✅ **People Search** - Find all companies by person name  
-✅ **Complex Queries** - Cross-reference board members and addresses  
+✅ **Complex Queries** - Cross-reference board members and addresses
 
 ### Current Limitations
+
 ⚠️ **Data Freshness** - Daily snapshots (re-download for updates)  
 ⚠️ **Annual Reports** - Use XBRL filings server for financial data  
 ⚠️ **Tax Debts** - Requires EMTA authentication  
-⚠️ **Personal IDs** - Removed for privacy (since Nov 2024)  
+⚠️ **Personal IDs** - Removed for privacy (since Nov 2024)
 
 ## 📈 Database Statistics
 
-| Table | Records | Description |
-|-------|---------|-------------|
-| companies | Partial dataset | Estonian companies |
-| board_members | Partial dataset | Current and historical board members |
-| shareholders | Available | Company ownership data |
-| beneficial_owners | Available | Ultimate beneficial owners |
-| company_general_data | Available | Extended company information |
+| Table                | Records         | Description                          |
+| -------------------- | --------------- | ------------------------------------ |
+| companies            | Partial dataset | Estonian companies                   |
+| board_members        | Partial dataset | Current and historical board members |
+| shareholders         | Available       | Company ownership data               |
+| beneficial_owners    | Available       | Ultimate beneficial owners           |
+| company_general_data | Available       | Extended company information         |
 
 ## 🛠️ Available Tools
 
@@ -115,7 +122,7 @@ searchCompany({
   query?: string        // General search
 })
 
-// Company Details  
+// Company Details
 getCompanyDetails(registryCode: string)
 
 // Board Members
@@ -137,6 +144,7 @@ checkDataAvailability() // Verify database status
 ## 🔧 Maintenance
 
 ### Update Data (Monthly Recommended)
+
 ```bash
 # Re-download latest data
 bun run download-data
@@ -147,6 +155,7 @@ node scripts/import-board-stream.js
 ```
 
 ### Check Database
+
 ```bash
 # Query statistics
 sqlite3 .rik-data/rik_data.db "SELECT COUNT(*) FROM companies;"

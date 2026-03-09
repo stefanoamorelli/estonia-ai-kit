@@ -438,36 +438,87 @@ class OpenDataMCPServer {
     try {
       const keyword = params.query || 'statistics';
       const searchLower = keyword.toLowerCase();
-      
+
       // Pre-defined known tables matching common searches
-      const knownTables: Array<{path: string, title: string, category: string, keywords: string[]}> = [
+      const knownTables: Array<{
+        path: string;
+        title: string;
+        category: string;
+        keywords: string[];
+      }> = [
         // Agriculture tables
-        { path: 'keskkond/pollumajanduskeskkond/KK208', title: 'Use of Pesticides in Agricultural Holdings', category: 'Agriculture', keywords: ['agriculture', 'farming', 'pesticides', 'crop'] },
-        { path: 'majandus/pellumajandus/pellumajanduse-majanduslik-arvepidamine/PM54', title: 'Agricultural Output and Value Added', category: 'Agriculture', keywords: ['agriculture', 'farming', 'output', 'economic'] },
-        { path: 'majandus/pellumajandus/pellumajanduse-majanduslik-arvepidamine/PM59', title: 'Agricultural Land Prices and Rents', category: 'Agriculture', keywords: ['agriculture', 'farming', 'land', 'price', 'rent'] },
-        
+        {
+          path: 'keskkond/pollumajanduskeskkond/KK208',
+          title: 'Use of Pesticides in Agricultural Holdings',
+          category: 'Agriculture',
+          keywords: ['agriculture', 'farming', 'pesticides', 'crop'],
+        },
+        {
+          path: 'majandus/pellumajandus/pellumajanduse-majanduslik-arvepidamine/PM54',
+          title: 'Agricultural Output and Value Added',
+          category: 'Agriculture',
+          keywords: ['agriculture', 'farming', 'output', 'economic'],
+        },
+        {
+          path: 'majandus/pellumajandus/pellumajanduse-majanduslik-arvepidamine/PM59',
+          title: 'Agricultural Land Prices and Rents',
+          category: 'Agriculture',
+          keywords: ['agriculture', 'farming', 'land', 'price', 'rent'],
+        },
+
         // Population tables
-        { path: 'rahvastik/rahvastikunaitajad-ja-koosseis/rahvaarv-ja-rahvastiku-koosseis/RV021', title: 'Population by Sex and Age Group', category: 'Population', keywords: ['population', 'demographics', 'age', 'people'] },
-        { path: 'rahvastik/rahvastikunaitajad-ja-koosseis/demograafilised-pehinaitajad/RV030', title: 'Births, Deaths and Natural Increase', category: 'Population', keywords: ['population', 'birth', 'death', 'demographics'] },
-        
+        {
+          path: 'rahvastik/rahvastikunaitajad-ja-koosseis/rahvaarv-ja-rahvastiku-koosseis/RV021',
+          title: 'Population by Sex and Age Group',
+          category: 'Population',
+          keywords: ['population', 'demographics', 'age', 'people'],
+        },
+        {
+          path: 'rahvastik/rahvastikunaitajad-ja-koosseis/demograafilised-pehinaitajad/RV030',
+          title: 'Births, Deaths and Natural Increase',
+          category: 'Population',
+          keywords: ['population', 'birth', 'death', 'demographics'],
+        },
+
         // Economic tables
-        { path: 'majandus/ehitus/ehitustood/EH001', title: 'Construction Activities', category: 'Economy', keywords: ['economy', 'construction', 'building'] },
-        { path: 'majandus/majandusuksused/ettevetjad/ER021', title: 'Enterprises by Economic Activity', category: 'Economy', keywords: ['economy', 'business', 'enterprise', 'company'] },
-        
+        {
+          path: 'majandus/ehitus/ehitustood/EH001',
+          title: 'Construction Activities',
+          category: 'Economy',
+          keywords: ['economy', 'construction', 'building'],
+        },
+        {
+          path: 'majandus/majandusuksused/ettevetjad/ER021',
+          title: 'Enterprises by Economic Activity',
+          category: 'Economy',
+          keywords: ['economy', 'business', 'enterprise', 'company'],
+        },
+
         // Environmental tables
-        { path: 'keskkond/keskonna-arvepidamine/ehuemissioonide-arvepidamine/KK31', title: 'Air Emission Accounts', category: 'Environment', keywords: ['environment', 'emission', 'air', 'pollution'] },
-        { path: 'keskkond/surve-keskkonnaseisundile/jaatmete-teke/KK068', title: 'Waste Generation by Economic Activity', category: 'Environment', keywords: ['environment', 'waste', 'recycling'] }
+        {
+          path: 'keskkond/keskonna-arvepidamine/ehuemissioonide-arvepidamine/KK31',
+          title: 'Air Emission Accounts',
+          category: 'Environment',
+          keywords: ['environment', 'emission', 'air', 'pollution'],
+        },
+        {
+          path: 'keskkond/surve-keskkonnaseisundile/jaatmete-teke/KK068',
+          title: 'Waste Generation by Economic Activity',
+          category: 'Environment',
+          keywords: ['environment', 'waste', 'recycling'],
+        },
       ];
-      
+
       // Filter tables based on search keyword
-      const matchingTables = knownTables.filter(table => 
-        table.keywords.some(keyword => keyword.includes(searchLower)) ||
-        table.title.toLowerCase().includes(searchLower) ||
-        table.category.toLowerCase().includes(searchLower)
+      const matchingTables = knownTables.filter(
+        (table) =>
+          table.keywords.some((keyword) => keyword.includes(searchLower)) ||
+          table.title.toLowerCase().includes(searchLower) ||
+          table.category.toLowerCase().includes(searchLower)
       );
-      
+
       // Convert to dataset format
-      const datasets = matchingTables.map(table => ({
+      const datasets = matchingTables.map((table) => ({
         id: table.path,
         title: table.title,
         description: `Statistics Estonia table: ${table.title}`,
@@ -476,13 +527,15 @@ class OpenDataMCPServer {
         format: ['JSON', 'CSV', 'PX'],
         created: new Date().toISOString(),
         modified: new Date().toISOString(),
-        resources: [{
-          id: table.path,
-          url: `https://andmed.stat.ee/api/v1/en/stat/${table.path}.PX`,
-          format: 'PX',
-          description: 'Statistics Estonia PX-Web table',
-          name: `${table.path.split('/').pop()}.PX`
-        }]
+        resources: [
+          {
+            id: table.path,
+            url: `https://andmed.stat.ee/api/v1/en/stat/${table.path}.PX`,
+            format: 'PX',
+            description: 'Statistics Estonia PX-Web table',
+            name: `${table.path.split('/').pop()}.PX`,
+          },
+        ],
       }));
 
       const result = {
@@ -492,7 +545,7 @@ class OpenDataMCPServer {
         total: datasets.length,
         datasets: datasets.slice(params.offset || 0, (params.offset || 0) + (params.limit || 20)),
         api_used: 'https://andmed.stat.ee/api/v1',
-        note: 'Showing curated tables from Statistics Estonia database'
+        note: 'Showing curated tables from Statistics Estonia database',
       };
 
       return {
@@ -508,17 +561,21 @@ class OpenDataMCPServer {
         content: [
           {
             type: 'text',
-            text: JSON.stringify({
-              error: 'Statistics Estonia API Error',
-              message: error instanceof Error ? error.message : 'Unknown error occurred',
-              query: params,
-              note: 'Error accessing Statistics Estonia API. Check if the API is available.',
-              available_alternatives: {
-                'browse_statistics': 'Browse Statistics Estonia categories directly',
-                'get_economic_indicators': 'Get specific economic indicators',
-                'get_population_statistics': 'Get population data'
-              }
-            }, null, 2),
+            text: JSON.stringify(
+              {
+                error: 'Statistics Estonia API Error',
+                message: error instanceof Error ? error.message : 'Unknown error occurred',
+                query: params,
+                note: 'Error accessing Statistics Estonia API. Check if the API is available.',
+                available_alternatives: {
+                  browse_statistics: 'Browse Statistics Estonia categories directly',
+                  get_economic_indicators: 'Get specific economic indicators',
+                  get_population_statistics: 'Get population data',
+                },
+              },
+              null,
+              2
+            ),
           },
         ],
       };
@@ -529,7 +586,7 @@ class OpenDataMCPServer {
     try {
       // Use Statistics Estonia API to get table metadata
       const metadata = await this.statClient.getTableMetadata(datasetId);
-      
+
       const dataset: Dataset = {
         id: datasetId,
         title: metadata.title,
@@ -545,29 +602,33 @@ class OpenDataMCPServer {
             url: `https://andmed.stat.ee/api/v1/en/stat/${datasetId}.PX`,
             format: 'PX',
             description: 'Table metadata and structure',
-            name: `${datasetId}_metadata.px`
+            name: `${datasetId}_metadata.px`,
           },
           {
             id: `${datasetId}-data`,
             url: `https://andmed.stat.ee/api/v1/en/stat/${datasetId}.PX`,
             format: 'JSON',
             description: 'Table data via POST query',
-            name: `${datasetId}_data.json`
-          }
-        ]
+            name: `${datasetId}_data.json`,
+          },
+        ],
       };
 
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify({
-              ...dataset,
-              api_used: 'https://andmed.stat.ee/api/v1',
-              variables: metadata.variables,
-              variable_count: metadata.variables.length,
-              note: 'Use query_statistics_table to get actual data with filters'
-            }, null, 2),
+            text: JSON.stringify(
+              {
+                ...dataset,
+                api_used: 'https://andmed.stat.ee/api/v1',
+                variables: metadata.variables,
+                variable_count: metadata.variables.length,
+                note: 'Use query_statistics_table to get actual data with filters',
+              },
+              null,
+              2
+            ),
           },
         ],
       };
@@ -576,13 +637,17 @@ class OpenDataMCPServer {
         content: [
           {
             type: 'text',
-            text: JSON.stringify({
-              error: 'Statistics Table Not Found',
-              message: error instanceof Error ? error.message : 'Unknown error occurred',
-              datasetId,
-              note: 'This table may not exist in Statistics Estonia database.',
-              suggestion: 'Use search_datasets or browse_statistics to find available tables'
-            }, null, 2),
+            text: JSON.stringify(
+              {
+                error: 'Statistics Table Not Found',
+                message: error instanceof Error ? error.message : 'Unknown error occurred',
+                datasetId,
+                note: 'This table may not exist in Statistics Estonia database.',
+                suggestion: 'Use search_datasets or browse_statistics to find available tables',
+              },
+              null,
+              2
+            ),
           },
         ],
       };
@@ -593,14 +658,14 @@ class OpenDataMCPServer {
     try {
       // Statistics Estonia is the primary data provider
       const categories = await this.statClient.getMainCategories();
-      
+
       // Count tables in each category if requested
       let totalTables = 0;
       if (includeCount) {
         for (const category of categories) {
           try {
             const items = await this.statClient.getCategory(category.id);
-            const tables = items.filter(item => item.type === 't');
+            const tables = items.filter((item) => item.type === 't');
             totalTables += tables.length;
           } catch (error) {
             // Skip counting errors
@@ -611,17 +676,20 @@ class OpenDataMCPServer {
       const result = {
         source: 'Statistics Estonia API',
         totalOrganizations: 1,
-        organizations: [{
-          name: 'Statistics Estonia',
-          id: 'statistics-estonia',
-          description: 'Official statistical authority of Estonia providing comprehensive statistical data',
-          datasetCount: includeCount ? totalTables : undefined,
-          categories: categories.length,
-          api_url: 'https://andmed.stat.ee/api/v1',
-          website: 'https://www.stat.ee'
-        }],
+        organizations: [
+          {
+            name: 'Statistics Estonia',
+            id: 'statistics-estonia',
+            description:
+              'Official statistical authority of Estonia providing comprehensive statistical data',
+            datasetCount: includeCount ? totalTables : undefined,
+            categories: categories.length,
+            api_url: 'https://andmed.stat.ee/api/v1',
+            website: 'https://www.stat.ee',
+          },
+        ],
         api_used: 'https://andmed.stat.ee/api/v1',
-        note: 'This MCP server focuses on Statistics Estonia official data only'
+        note: 'This MCP server focuses on Statistics Estonia official data only',
       };
 
       return {
@@ -637,12 +705,16 @@ class OpenDataMCPServer {
         content: [
           {
             type: 'text',
-            text: JSON.stringify({
-              error: 'Statistics Estonia API Error',
-              message: error instanceof Error ? error.message : 'Unknown error occurred',
-              note: 'Error accessing Statistics Estonia API.',
-              fallback: 'Try using browse_statistics to explore categories directly'
-            }, null, 2),
+            text: JSON.stringify(
+              {
+                error: 'Statistics Estonia API Error',
+                message: error instanceof Error ? error.message : 'Unknown error occurred',
+                note: 'Error accessing Statistics Estonia API.',
+                fallback: 'Try using browse_statistics to explore categories directly',
+              },
+              null,
+              2
+            ),
           },
         ],
       };
@@ -1102,7 +1174,7 @@ class OpenDataMCPServer {
             values: [variable.values[0]], // Use first available value
           },
         }));
-        
+
         data = await this.statClient.queryTableData(tablePath, defaultFilters);
       } else {
         // Convert filters to proper format
@@ -1128,7 +1200,10 @@ class OpenDataMCPServer {
                 data: formatted,
                 metadata: data.metadata,
                 variables: metadata.variables,
-                note: !filters || filters.length === 0 ? 'Showing sample data with default filters. Provide specific filters for targeted results.' : undefined,
+                note:
+                  !filters || filters.length === 0
+                    ? 'Showing sample data with default filters. Provide specific filters for targeted results.'
+                    : undefined,
               },
               null,
               2
@@ -1189,17 +1264,17 @@ class OpenDataMCPServer {
   async run() {
     console.error('Open Data MCP Server starting...');
     const transport = new StdioServerTransport();
-    
+
     try {
       await this.server.connect(transport);
       console.error('Open Data MCP Server running on stdio');
-      
+
       // Handle shutdown gracefully
       process.on('SIGINT', () => {
         console.error('Server shutting down...');
         process.exit(0);
       });
-      
+
       return true;
     } catch (error) {
       console.error('Failed to start server:', error);

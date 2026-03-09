@@ -10,12 +10,12 @@ export class RIKDatabaseClient {
   constructor() {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     this.DB_PATH = path.join(__dirname, '../../.rik-data/rik_data.db');
-    
+
     this.db = new Database(this.DB_PATH, {
       readonly: true,
-      fileMustExist: true
+      fileMustExist: true,
     });
-    
+
     // Enable query optimization
     this.db.pragma('journal_mode = WAL');
     this.db.pragma('temp_store = MEMORY');
@@ -43,35 +43,35 @@ export class RIKDatabaseClient {
       LEFT JOIN company_general_data g ON c.registry_code = g.registry_code
       WHERE 1=1
     `;
-    
+
     const queryParams: any[] = [];
-    
+
     if (params.registryCode) {
       query += ' AND c.registry_code = ?';
       queryParams.push(params.registryCode);
     }
-    
+
     if (params.name) {
       query += ' AND c.name LIKE ?';
       queryParams.push(`%${params.name}%`);
     }
-    
+
     if (params.address) {
       query += ' AND (c.normalized_address LIKE ? OR c.address LIKE ? OR c.location LIKE ?)';
       queryParams.push(`%${params.address}%`, `%${params.address}%`, `%${params.address}%`);
     }
-    
+
     if (params.query) {
       query += ' AND (c.name LIKE ? OR c.normalized_address LIKE ? OR c.registry_code LIKE ?)';
       queryParams.push(`%${params.query}%`, `%${params.query}%`, `%${params.query}%`);
     }
-    
+
     query += ' LIMIT ?';
     queryParams.push(params.limit || 100);
-    
+
     const stmt = this.db.prepare(query);
     const results = stmt.all(...queryParams);
-    
+
     return results.map((row: any) => ({
       registry_code: row.registry_code,
       name: row.name,
@@ -83,7 +83,7 @@ export class RIKDatabaseClient {
       phone: row.phone,
       capital: row.capital,
       activity_area: row.activity_area,
-      founded_date: row.founded_date || row.first_registration_date
+      founded_date: row.founded_date || row.first_registration_date,
     }));
   }
 
@@ -104,14 +104,14 @@ export class RIKDatabaseClient {
       LEFT JOIN company_general_data g ON c.registry_code = g.registry_code
       WHERE c.registry_code = ?
     `;
-    
+
     const stmt = this.db.prepare(query);
     const company = stmt.get(registryCode) as any;
-    
+
     if (!company) {
       throw new Error(`Company not found: ${registryCode}`);
     }
-    
+
     return {
       registry_code: company.registry_code,
       name: company.name,
@@ -123,7 +123,7 @@ export class RIKDatabaseClient {
       phone: company.phone,
       capital: company.capital,
       activity_area: company.activity_area || company.main_activity_text,
-      founded_date: company.founded_date || company.first_registration_date
+      founded_date: company.founded_date || company.first_registration_date,
     };
   }
 
@@ -142,15 +142,15 @@ export class RIKDatabaseClient {
       WHERE registry_code = ?
       ORDER BY start_date DESC
     `;
-    
+
     const stmt = this.db.prepare(query);
     const members = stmt.all(registryCode);
-    
+
     return members.map((m: any) => ({
       name: m.full_name || `${m.first_name || ''} ${m.last_name || ''}`.trim() || 'Unknown',
       role: m.role_text || 'Board Member',
       start_date: m.start_date,
-      end_date: m.end_date
+      end_date: m.end_date,
     }));
   }
 
@@ -168,7 +168,7 @@ export class RIKDatabaseClient {
       WHERE registry_code = ?
       ORDER BY ownership_percentage DESC
     `;
-    
+
     const stmt = this.db.prepare(query);
     return stmt.all(registryCode);
   }
@@ -186,7 +186,7 @@ export class RIKDatabaseClient {
       WHERE registry_code = ?
       ORDER BY control_percentage DESC
     `;
-    
+
     const stmt = this.db.prepare(query);
     return stmt.all(registryCode);
   }
@@ -207,21 +207,28 @@ export class RIKDatabaseClient {
       ORDER BY b.start_date DESC
       LIMIT 100
     `;
-    
+
     const stmt = this.db.prepare(query);
     return stmt.all(`%${name}%`);
   }
 
   async getStatistics(): Promise<any> {
     const stats = {
-      total_companies: (this.db.prepare('SELECT COUNT(*) as count FROM companies').get() as any).count,
-      total_board_members: (this.db.prepare('SELECT COUNT(*) as count FROM board_members').get() as any).count,
-      total_shareholders: (this.db.prepare('SELECT COUNT(*) as count FROM shareholders').get() as any).count,
-      total_beneficial_owners: (this.db.prepare('SELECT COUNT(*) as count FROM beneficial_owners').get() as any).count,
+      total_companies: (this.db.prepare('SELECT COUNT(*) as count FROM companies').get() as any)
+        .count,
+      total_board_members: (
+        this.db.prepare('SELECT COUNT(*) as count FROM board_members').get() as any
+      ).count,
+      total_shareholders: (
+        this.db.prepare('SELECT COUNT(*) as count FROM shareholders').get() as any
+      ).count,
+      total_beneficial_owners: (
+        this.db.prepare('SELECT COUNT(*) as count FROM beneficial_owners').get() as any
+      ).count,
       by_status: {} as Record<string, number>,
-      by_legal_form: {} as Record<string, number>
+      by_legal_form: {} as Record<string, number>,
     };
-    
+
     // Get status breakdown
     const statusQuery = this.db.prepare(`
       SELECT status_text, COUNT(*) as count 
@@ -229,12 +236,12 @@ export class RIKDatabaseClient {
       GROUP BY status_text 
       ORDER BY count DESC
     `);
-    
+
     for (const row of statusQuery.all()) {
       const r = row as any;
       stats.by_status[r.status_text] = r.count;
     }
-    
+
     // Get legal form breakdown
     const legalFormQuery = this.db.prepare(`
       SELECT legal_form, COUNT(*) as count 
@@ -244,12 +251,12 @@ export class RIKDatabaseClient {
       ORDER BY count DESC
       LIMIT 10
     `);
-    
+
     for (const row of legalFormQuery.all()) {
       const r = row as any;
       stats.by_legal_form[r.legal_form] = r.count;
     }
-    
+
     return stats;
   }
 
@@ -268,17 +275,17 @@ export class RIKDatabaseClient {
          OR c.location LIKE ?
       LIMIT ?
     `;
-    
+
     const stmt = this.db.prepare(query);
     const results = stmt.all(`%${address}%`, `%${address}%`, `%${address}%`, limit);
-    
+
     return results.map((row: any) => ({
       registry_code: row.registry_code,
       name: row.name,
       status: row.status,
       status_text: row.status_text,
       address: row.address || '',
-      vat_number: row.vat_number
+      vat_number: row.vat_number,
     }));
   }
 

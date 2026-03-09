@@ -118,17 +118,17 @@ export class RIKMCPServer {
   async run() {
     // console.error('RIK MCP Server starting...');
     const transport = new StdioServerTransport();
-    
+
     try {
       await this.server.connect(transport);
       // console.error('RIK MCP Server running on stdio');
-      
+
       // Handle shutdown gracefully
       process.on('SIGINT', () => {
         // console.error('Server shutting down...');
         process.exit(0);
       });
-      
+
       return true;
     } catch (error) {
       // console.error('Failed to start server:', error);

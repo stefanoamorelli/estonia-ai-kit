@@ -11,7 +11,7 @@ export class RIKClient {
 
   constructor() {
     this.openDataClient = new RIKOpenDataClient();
-    
+
     // Try to use database if available
     try {
       const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -34,7 +34,7 @@ export class RIKClient {
         // Database search failed, try next method
       }
     }
-    
+
     // Fall back to open data client
     try {
       return await this.openDataClient.searchCompanies(params);
@@ -53,7 +53,7 @@ export class RIKClient {
         // console.error('Database details failed:', error);
       }
     }
-    
+
     // Fall back to open data client
     return await this.openDataClient.getCompanyDetails(registryCode);
   }
@@ -70,7 +70,7 @@ export class RIKClient {
         // console.error('Database board members failed:', error);
       }
     }
-    
+
     // Fall back to open data client
     try {
       return await this.openDataClient.getBoardMembers(registryCode);
@@ -110,7 +110,7 @@ export class RIKClient {
         // console.error('Database person search failed:', error);
       }
     }
-    
+
     try {
       return await this.openDataClient.searchByPerson(name);
     } catch (error) {
@@ -127,13 +127,13 @@ export class RIKClient {
         // console.error('Database statistics failed:', error);
       }
     }
-    
+
     return await this.openDataClient.getStatistics();
   }
 
   async checkDataAvailability(): Promise<{ [key: string]: boolean }> {
     const availability: { [key: string]: boolean } = {};
-    
+
     // Check database
     if (this.dbClient) {
       availability.database = true;
@@ -143,7 +143,7 @@ export class RIKClient {
     } else {
       availability.database = false;
     }
-    
+
     // Check open data files
     const openDataAvailability = await this.openDataClient.checkDataAvailability();
     return { ...availability, ...openDataAvailability };

@@ -32,8 +32,7 @@ const insertMany = db.transaction((members) => {
 });
 
 const jsonPath = path.join(DATA_DIR, 'ettevotja_rekvisiidid__kaardile_kantud_isikud.json');
-const pipeline = createReadStream(jsonPath)
-  .pipe(StreamArray.withParser());
+const pipeline = createReadStream(jsonPath).pipe(StreamArray.withParser());
 
 let count = 0;
 let batch = [];
@@ -44,7 +43,7 @@ pipeline.on('data', ({ value: company }) => {
     console.log('Processing Dominance OÜ board members...');
     dominanceProcessed = true;
   }
-  
+
   if (company.kaardile_kantud_isikud && Array.isArray(company.kaardile_kantud_isikud)) {
     for (const member of company.kaardile_kantud_isikud) {
       batch.push([
@@ -59,10 +58,10 @@ pipeline.on('data', ({ value: company }) => {
         member.lopp_kpv,
         member.aadress_riik_tekstina,
         member.aadress_ads__ads_normaliseeritud_taisaadress,
-        member.email
+        member.email,
       ]);
       count++;
-      
+
       if (batch.length >= 1000) {
         insertMany(batch);
         batch = [];
@@ -78,20 +77,28 @@ pipeline.on('end', () => {
   if (batch.length > 0) {
     insertMany(batch);
   }
-  
+
   console.log(`\n✅ Imported ${count} board members`);
   console.log(`Dominance OÜ processed: ${dominanceProcessed}`);
-  
+
   // Check Dominance board members
-  const dominanceMembers = db.prepare(`
+  const dominanceMembers = db
+    .prepare(
+      `
     SELECT * FROM board_members WHERE registry_code = '14664821'
-  `).all();
-  
+  `
+    )
+    .all();
+
   console.log(`\nDominance OÜ board members in database: ${dominanceMembers.length}`);
   if (dominanceMembers.length > 0) {
-    console.log('Board member:', dominanceMembers[0].full_name || `${dominanceMembers[0].first_name} ${dominanceMembers[0].last_name}`);
+    console.log(
+      'Board member:',
+      dominanceMembers[0].full_name ||
+        `${dominanceMembers[0].first_name} ${dominanceMembers[0].last_name}`
+    );
   }
-  
+
   db.close();
 });
 
