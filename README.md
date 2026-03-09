@@ -1,6 +1,6 @@
 <div align="center">
-  
-  # 🏰 Estonia AI Kit 🇪🇪
+
+# 🏰 Estonia AI Kit 🇪🇪
 
 ![Estonia AI Kit](https://github.com/user-attachments/assets/3ba87546-da28-4b27-b3b8-05eba2d2c5a4)
 
@@ -12,18 +12,16 @@
 ![](https://badge.mcpx.dev?type=server&features=resources,tools 'MCP server with features')
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Go](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![Claude Desktop](https://img.shields.io/badge/Claude_Desktop-Ready-5E45CE?logo=anthropic&logoColor=white)](https://claude.ai)
 [![VS Code](https://img.shields.io/badge/VS_Code-Compatible-0098FF?logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/)
-[![X-Road](https://img.shields.io/badge/X--Road-Integrated-00b9a7)](https://x-tee.ee/en/)
 [![Nx](https://img.shields.io/badge/Nx-Monorepo-143055?logo=nx&logoColor=white)](https://nx.dev)
-[![Documentation](https://img.shields.io/badge/docs-modelcontextprotocol.io-blue.svg)](https://modelcontextprotocol.io)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 </div>
 
 > [!NOTE]
 > This is a community-driven open source project and is not affiliated with, endorsed by, or connected to the Estonian government or any official Estonian institutions.
-
 
 ## 🌍 The Estonian Digital Revolution
 
@@ -39,82 +37,64 @@ Since the early 1990s, Estonia has transformed itself into one of the world's mo
 
 ## 📖 What is Estonia AI Kit?
 
-Estonia AI Kit connects your AI applications directly to Estonian government services, open data, and digital infrastructure. This SDK provides everything you need to build MCP servers for Claude, create data pipelines, develop analytical tools, or integrate with X-Road services.
-
-The toolkit follows Estonia's core digital principles: transparent APIs, comprehensive documentation, and reliable infrastructure. Every component is fully typed, thoroughly tested, and production-ready.
+Estonia AI Kit connects your AI applications directly to Estonian government services, open data, and digital infrastructure. It includes **MCP servers** for AI integration, **CLI tools** for direct terminal access, and **skills** for AI coding agents (like Claude Code) to interact with authenticated services.
 
 ### 🎯 What is MCP?
 
-Model Context Protocol (MCP) is an open protocol that standardizes how AI applications connect with external data sources and tools. Estonia AI Kit implements MCP servers for various Estonian government services, making them accessible to AI models like Claude, GPT, and others.
+Model Context Protocol (MCP) is an open protocol that standardizes how AI applications connect with external data sources and tools. Estonia AI Kit implements MCP servers for various Estonian services, making them accessible to AI models like Claude, GPT, and others.
+
+## 📦 What's Included
+
+This toolkit covers **government services** (tax, business registry, legal data, statistics) and **private sector services** (banking). Some require personal authentication via Smart-ID/ID-card.
+
+### 🏛️ Government Services
+
+| Package                                                   | Description                                   | Type        | Auth     | Status     |
+| --------------------------------------------------------- | --------------------------------------------- | ----------- | -------- | ---------- |
+| [`@estonia-ai-kit/rik-mcp-server`](./mcp/rik)             | Estonian Business Register (RIK)              | MCP Server  | None     | 🔶 WIP     |
+| [`@estonia-ai-kit/open-data-mcp-server`](./mcp/open-data) | Statistics Estonia / Open Data Portal         | MCP Server  | None     | 🔶 WIP     |
+| [`cli/emta`](./cli/emta)                                  | Tax & Customs Board (EMTA) - TSD declarations | CLI / Skill | Smart-ID | ✅ Working |
+| [`rag/riigiteataja`](./rag/riigiteataja)                  | Estonian Legal Document RAG pipeline          | RAG         | None     | 🔶 WIP     |
+| [`@estonia-ai-kit/shared`](./packages/shared)             | Shared utilities and types                    | Library     | -        | ✅ Ready   |
+
+### 🏦 Private Sector Services
+
+| Package        | Description                       | Type        | Auth     | Status     |
+| -------------- | --------------------------------- | ----------- | -------- | ---------- |
+| `cli/lhv`      | LHV Bank - accounts, transactions | CLI / Skill | Smart-ID | 🔜 Planned |
+| `cli/swedbank` | Swedbank - accounts, transactions | CLI / Skill | Smart-ID | 🔜 Planned |
 
 > [!IMPORTANT]
-> This project is **constantly evolving** as we work to integrate more Estonian government services and improve existing implementations. Current functionality varies by package:
->
-> | Package                                                   | Status     | Data Source                            | Ready for Use?                  |
-> | --------------------------------------------------------- | ---------- | -------------------------------------- | ------------------------------- |
-> | **[RIK](https://ariregister.rik.ee)** (Business Register) | 🔶 WIP | Real open data files (daily snapshots) | 🔶 Partial - requires data download |
-> | **[EMTA](https://www.emta.ee)** (Tax & Customs)           | 🔴 POC     | Mock data (POC demonstration)          | 🔴 No - X-Road auth needed      |
-> | **[Open Data](https://andmed.stat.ee)** Portal            | 🔶 WIP | Statistics Estonia API (real data)     | 🔶 Partial - curated tables only        |
->
-> **For RIK Package Users:**
->
-> 1. Run `bun run download-data` in the RIK package to fetch real data files
-> 2. Data is from daily snapshots (not real-time)
-> 3. Personal ID numbers are removed for privacy (since Nov 2024)
->
-> **This is experimental software** intended for:
->
-> - Learning and experimentation
-> - Development reference
-> - Community contribution
-> - Testing MCP server implementations
->
-> **For development/experimental purposes only.**
+> **CLI tools that require authentication** (Smart-ID, ID-card) authenticate as _you_ and access _your_ data. Sessions expire after ~30 minutes.
 
-## ⚡ Technical Stack
+## 🚀 Quick Start
 
-Built with modern TypeScript and the Model Context Protocol (MCP) SDK:
-
-| Component           | Technology                            | Purpose                                  |
-| ------------------- | ------------------------------------- | ---------------------------------------- |
-| **MCP Servers**     | TypeScript, @modelcontextprotocol/sdk | AI assistant integration                 |
-| **API Clients**     | Axios, native fetch                   | HTTP/REST communication                  |
-| **Data Processing** | CSV parsing, JSON streaming           | Handle large datasets efficiently        |
-| **Caching**         | node-cache                            | Reduce API calls and improve performance |
-| **Type Safety**     | TypeScript strict mode                | Full type coverage for reliability       |
-| **Monorepo**        | Nx workspace                          | Consistent tooling and code sharing      |
-
-## 📦 Packages
-
-| Package                                                   | Description                    | NPM                                                                                                                                             | Status   |
-| --------------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| [`@estonia-ai-kit/rik-mcp-server`](./mcp/rik)             | Estonian Business Register API | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/rik-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/rik-mcp-server)             | 🔶 WIP |
-| [`@estonia-ai-kit/emta-mcp-server`](./mcp/emta)           | Tax and Customs Board API      | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/emta-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/emta-mcp-server)           | 🔴 POC |
-| [`@estonia-ai-kit/open-data-mcp-server`](./mcp/open-data) | Open Data Portal API           | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/open-data-mcp-server)](https://www.npmjs.com/package/@estonia-ai-kit/open-data-mcp-server) | 🔶 WIP |
-| [`@estonia-ai-kit/shared`](./packages/shared)             | Shared utilities and types     | [![npm](https://img.shields.io/npm/v/@estonia-ai-kit/shared)](https://www.npmjs.com/package/@estonia-ai-kit/shared)                             | ✅ Ready |
-| [`rag/riigiteataja`](./rag/riigiteataja)                   | Estonian Legal Document RAG    | N/A                                                                                                                                             | 🔶 WIP |
-
-## 🛠️ Installation
-
-### Using Bun (Recommended)
+### CLI Tools / Skills
 
 ```bash
-bun add @estonia-ai-kit/rik-mcp-server
-bun add @estonia-ai-kit/emta-mcp-server
-bun add @estonia-ai-kit/open-data-mcp-server
+# Build the EMTA CLI
+cd cli/emta
+go build -o emta-cli .
+
+# Login via Smart-ID QR code
+./emta-cli login
+
+# List your TSD declarations
+./emta-cli tsd list
+
+# Show declaration details
+./emta-cli tsd show <declaration-id>
 ```
 
-### Using npm
+### MCP Servers
 
 ```bash
-npm install @estonia-ai-kit/rik-mcp-server
-npm install @estonia-ai-kit/emta-mcp-server
-npm install @estonia-ai-kit/open-data-mcp-server
+# Install dependencies
+bun install
+
+# Build all packages
+bun run build
 ```
-
-## 🚦 Quick Start
-
-### 1. Configure MCP in Claude Desktop
 
 Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
@@ -125,10 +105,6 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
       "command": "node",
       "args": ["/path/to/estonia-ai-kit/mcp/rik/dist/index.js"]
     },
-    "estonia-emta": {
-      "command": "node",
-      "args": ["/path/to/estonia-ai-kit/mcp/emta/dist/index.js"]
-    },
     "estonia-open-data": {
       "command": "node",
       "args": ["/path/to/estonia-ai-kit/mcp/open-data/dist/index.js"]
@@ -137,17 +113,62 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 }
 ```
 
-> **Note**: Run `npm run build` in each MCP directory before first use.
+## 🛠️ Project Structure
 
-### 2. Use in Your AI Application
+```
+estonia-ai-kit/
+├── cli/                       # CLI tools / skills (authenticated services)
+│   └── emta/                  # EMTA Tax & Customs CLI (Go)
+├── mcp/                       # MCP servers
+│   ├── rik/                   # Business Register
+│   └── open-data/             # Statistics Estonia
+├── packages/                  # Shared TypeScript libraries
+│   ├── shared/                # Common utilities
+│   └── riigiteataja-api-client/
+├── rag/                       # RAG pipelines
+│   └── riigiteataja/          # Legal documents
+└── tests/                     # E2E tests
+```
 
-```typescript
-import { RIKClient } from '@estonia-ai-kit/rik-mcp-server';
+## ⚡ Technical Stack
 
-const client = new RIKClient();
-const company = await client.searchCompany({
-  registryCode: '10000000',
-});
+| Component              | Technology                            | Purpose                             |
+| ---------------------- | ------------------------------------- | ----------------------------------- |
+| **MCP Servers**        | TypeScript, @modelcontextprotocol/sdk | AI assistant integration            |
+| **CLI Tools / Skills** | Go, Cobra                             | Terminal access and AI agent skills |
+| **API Clients**        | Axios, native fetch, net/http         | HTTP/REST communication             |
+| **Data Processing**    | CSV parsing, HTML parsing, JSON       | Handle various data formats         |
+| **Monorepo**           | Nx workspace                          | Consistent tooling and code sharing |
+
+## 🧑‍💻 Development
+
+### Prerequisites
+
+- [Node.js 20+](https://nodejs.org/) and [Bun 1.0+](https://bun.sh/) — for MCP servers and TS packages
+- [Go 1.21+](https://go.dev/) — for CLI tools
+
+### Setup
+
+```bash
+git clone https://github.com/stefanoamorelli/estonia-ai-kit.git
+cd estonia-ai-kit
+
+# TypeScript packages
+bun install
+bun run build
+
+# Go CLI tools
+cd cli/emta && go build -o emta-cli .
+```
+
+### Testing
+
+```bash
+# TypeScript packages
+bun run test
+npx nx test rik-mcp-server
+npx nx test open-data-mcp-server
+npx nx test shared
 ```
 
 ## 🔗 Estonian Government Resources
@@ -158,74 +179,6 @@ const company = await client.searchCompany({
 - 🔐 [X-Road](https://x-tee.ee/en/) - Estonian data exchange platform
 - 🇪🇪 [e-Estonia](https://e-estonia.com/) - Digital society overview
 - 📚 [RIK Developer Portal](https://avaandmed.ariregister.rik.ee/en) - Business registry API documentation
-
-## 🧑‍💻 Development
-
-### Prerequisites
-
-- [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-- [![Bun](https://img.shields.io/badge/Bun-1.0+-000000?logo=bun&logoColor=white)](https://bun.sh/)
-- [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-
-### Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/estonia-ai-kit.git
-cd estonia-ai-kit
-
-# Install dependencies
-bun install
-
-# Build all packages
-bun run build
-
-# Run tests
-bun run test
-
-# Start development mode
-bun run dev
-```
-
-### Project Structure
-
-```
-estonia-ai-kit/
-├── mcp/                    # MCP server packages
-│   ├── rik/               # Business Register server
-│   ├── emta/              # Tax & Customs server
-│   └── open-data/         # Open Data Portal server
-├── packages/              # Shared packages
-│   └── shared/           # Common utilities and types
-│       └── src/
-│           └── mcp/      # MCP-specific utilities
-├── .github/              # GitHub workflows
-└── docs/                 # Documentation
-```
-
-## 🧪 Testing
-
-Each package includes comprehensive tests:
-
-```bash
-# Run all tests
-bun run test
-
-# Run tests for specific package from root
-npx nx test rik-mcp-server
-npx nx test emta-mcp-server
-npx nx test open-data-mcp-server
-npx nx test shared
-
-# Run tests for affected packages only
-npx nx affected --target=test
-
-# Watch mode for specific package
-npx nx test rik-mcp-server --watch
-
-# Run with coverage
-npx nx test rik-mcp-server --coverage
-```
 
 ## 🤝 Contributing
 
