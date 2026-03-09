@@ -1,0 +1,12 @@
+{
+  "name": "emta",
+  "description": "EMTA (Estonian Tax and Customs Board) CLI skill. Authenticate via Smart-ID, list and view TSD declarations.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Stefano Amorelli",
+    "email": "stefano@amorelli.tech"
+  },
+  "homepage": "https://amorelli.tech",
+  "repository": "https://github.com/stefanoamorelli/estonia-ai-kit",
+  "license": "AGPL-3.0"
+}

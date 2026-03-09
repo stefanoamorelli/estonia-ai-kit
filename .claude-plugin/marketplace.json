@@ -1,0 +1,35 @@
+{
+  "name": "estonia-ai-kit",
+  "owner": {
+    "name": "Stefano Amorelli",
+    "email": "stefano@amorelli.tech"
+  },
+  "metadata": {
+    "description": "Claude Code plugins for Estonian digital services. Banking, tax, business registry, and more.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "lhv",
+      "source": "./plugins/lhv",
+      "description": "LHV Bank CLI skill. Authenticate with Smart-ID, view accounts and transactions, switch between personal and business profiles, and make SEPA payments.",
+      "version": "0.1.0",
+      "author": { "name": "Stefano Amorelli" },
+      "repository": "https://github.com/stefanoamorelli/estonia-ai-kit",
+      "license": "AGPL-3.0",
+      "keywords": ["banking", "lhv", "estonia", "smart-id", "sepa"],
+      "category": "finance"
+    },
+    {
+      "name": "emta",
+      "source": "./plugins/emta",
+      "description": "EMTA (Estonian Tax and Customs Board) CLI skill. Authenticate via Smart-ID, list and view TSD declarations.",
+      "version": "0.1.0",
+      "author": { "name": "Stefano Amorelli" },
+      "repository": "https://github.com/stefanoamorelli/estonia-ai-kit",
+      "license": "AGPL-3.0",
+      "keywords": ["tax", "emta", "estonia", "smart-id", "tsd"],
+      "category": "finance"
+    }
+  ]
+}

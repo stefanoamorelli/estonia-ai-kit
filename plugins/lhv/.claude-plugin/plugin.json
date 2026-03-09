@@ -1,0 +1,12 @@
+{
+  "name": "lhv",
+  "description": "LHV Bank CLI skill for Claude Code. Authenticate with Smart-ID, view accounts and transactions, switch between personal and business profiles, and make SEPA payments.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Stefano Amorelli",
+    "email": "stefano@amorelli.tech"
+  },
+  "homepage": "https://amorelli.tech",
+  "repository": "https://github.com/stefanoamorelli/estonia-ai-kit",
+  "license": "AGPL-3.0"
+}
