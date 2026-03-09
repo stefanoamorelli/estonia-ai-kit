@@ -192,8 +192,8 @@ jobs:
             const fileNames = files.data.map(f => f.filename);
 
             if (fileNames.some(f => f.includes('mcp/rik'))) labels.push('package: rik');
-            if (fileNames.some(f => f.includes('mcp/emta'))) labels.push('package: emta');
             if (fileNames.some(f => f.includes('mcp/open-data'))) labels.push('package: open-data');
+            if (fileNames.some(f => f.includes('cli/emta'))) labels.push('package: emta');
             if (fileNames.some(f => f.includes('packages/shared'))) labels.push('package: shared');
             if (fileNames.some(f => f.includes('.github'))) labels.push('ci/cd');
             if (fileNames.some(f => f.endsWith('.md'))) labels.push('documentation');

@@ -110,7 +110,6 @@ jobs:
 
             ### Packages Released:
             - @estonia-ai-kit/rik-mcp-server
-            - @estonia-ai-kit/emta-mcp-server
             - @estonia-ai-kit/open-data-mcp-server
             - @estonia-ai-kit/riigiteataja-mcp-server
             - @estonia-ai-kit/riigiteataja-api-client
