@@ -128,9 +128,9 @@ console.log('✅ Database schema created');
 // Function to import CSV data
 async function importCompaniesFromCSV() {
   console.log('\n📥 Importing companies from CSV...');
-  
+
   const csvPath = path.join(DATA_DIR, 'ettevotja_rekvisiidid__lihtandmed.csv');
-  
+
   return new Promise((resolve, reject) => {
     const insertStmt = db.prepare(`
       INSERT OR REPLACE INTO companies (
@@ -139,7 +139,7 @@ async function importCompaniesFromCSV() {
         postal_code, first_registration_date
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    
+
     const insertMany = db.transaction((companies) => {
       for (const company of companies) {
         insertStmt.run(
@@ -157,21 +157,23 @@ async function importCompaniesFromCSV() {
         );
       }
     });
-    
+
     const companies = [];
     let count = 0;
-    
+
     createReadStream(csvPath)
-      .pipe(parse({
-        columns: true,
-        delimiter: ';',
-        skip_empty_lines: true,
-        bom: true
-      }))
+      .pipe(
+        parse({
+          columns: true,
+          delimiter: ';',
+          skip_empty_lines: true,
+          bom: true,
+        })
+      )
       .on('data', (row) => {
         companies.push(row);
         count++;
-        
+
         // Insert in batches of 1000
         if (companies.length >= 1000) {
           insertMany(companies);
@@ -196,9 +198,9 @@ async function importCompaniesFromCSV() {
 // Function to import board members from JSON
 async function importBoardMembers() {
   console.log('\n📥 Importing board members from JSON...');
-  
+
   const jsonPath = path.join(DATA_DIR, 'ettevotja_rekvisiidid__kaardile_kantud_isikud.json');
-  
+
   // Check if file exists
   try {
     await fs.access(jsonPath);
@@ -206,7 +208,7 @@ async function importBoardMembers() {
     console.log('⚠️  Board members file not found, skipping...');
     return;
   }
-  
+
   // Dynamic import of stream-json
   let StreamArray;
   try {
@@ -220,10 +222,9 @@ async function importBoardMembers() {
     await importBoardMembersFromArray(data);
     return;
   }
-  
-  const pipeline = createReadStream(jsonPath)
-    .pipe(StreamArray.withParser());
-  
+
+  const pipeline = createReadStream(jsonPath).pipe(StreamArray.withParser());
+
   const insertStmt = db.prepare(`
     INSERT INTO board_members (
       registry_code, person_type, person_role, role_text,
@@ -231,16 +232,16 @@ async function importBoardMembers() {
       start_date, end_date, address_country, address_full, email
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  
+
   const insertMany = db.transaction((members) => {
     for (const member of members) {
       insertStmt.run(...member);
     }
   });
-  
+
   let count = 0;
   let batch = [];
-  
+
   return new Promise((resolve, reject) => {
     pipeline.on('data', ({ value: company }) => {
       if (company.kaardile_kantud_isikud && Array.isArray(company.kaardile_kantud_isikud)) {
@@ -257,10 +258,10 @@ async function importBoardMembers() {
             member.lopp_kpv,
             member.aadress_riik_tekstina,
             member.aadress_ads__ads_normaliseeritud_taisaadress,
-            member.email
+            member.email,
           ]);
           count++;
-          
+
           if (batch.length >= 1000) {
             insertMany(batch);
             batch = [];
@@ -271,7 +272,7 @@ async function importBoardMembers() {
         }
       }
     });
-    
+
     pipeline.on('end', () => {
       if (batch.length > 0) {
         insertMany(batch);
@@ -279,7 +280,7 @@ async function importBoardMembers() {
       console.log(`\n✅ Imported ${count} board members`);
       resolve();
     });
-    
+
     pipeline.on('error', reject);
   });
 }
@@ -293,16 +294,16 @@ async function importBoardMembersFromArray(data) {
       start_date, end_date, address_country, address_full, email
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  
+
   const insertMany = db.transaction((members) => {
     for (const member of members) {
       insertStmt.run(...member);
     }
   });
-  
+
   let count = 0;
   const batch = [];
-  
+
   for (const company of data) {
     if (company.kaardile_kantud_isikud && Array.isArray(company.kaardile_kantud_isikud)) {
       for (const member of company.kaardile_kantud_isikud) {
@@ -318,10 +319,10 @@ async function importBoardMembersFromArray(data) {
           member.lopp_kpv,
           member.aadress_riik_tekstina,
           member.aadress_ads__ads_normaliseeritud_taisaadress,
-          member.email
+          member.email,
         ]);
         count++;
-        
+
         if (batch.length >= 1000) {
           insertMany(batch);
           batch.length = 0;
@@ -332,20 +333,20 @@ async function importBoardMembersFromArray(data) {
       }
     }
   }
-  
+
   if (batch.length > 0) {
     insertMany(batch);
   }
-  
+
   console.log(`\n✅ Imported ${count} board members`);
 }
 
 // Function to import general data from JSON
 async function importGeneralData() {
   console.log('\n📥 Importing general company data from JSON...');
-  
+
   const jsonPath = path.join(DATA_DIR, 'ettevotja_rekvisiidid__yldandmed.json');
-  
+
   // Check if file exists
   try {
     await fs.access(jsonPath);
@@ -353,16 +354,15 @@ async function importGeneralData() {
     console.log('⚠️  General data file not found, skipping...');
     return;
   }
-  
+
   // Try streaming first
   let StreamArray;
   try {
     const streamJsonModule = await import('stream-json/streamers/StreamArray.js');
     StreamArray = streamJsonModule.default;
-    
-    const pipeline = createReadStream(jsonPath)
-      .pipe(StreamArray.withParser());
-    
+
+    const pipeline = createReadStream(jsonPath).pipe(StreamArray.withParser());
+
     const insertStmt = db.prepare(`
       INSERT OR REPLACE INTO company_general_data (
         registry_code, email, phone, capital, activity_area, 
@@ -370,16 +370,16 @@ async function importGeneralData() {
         main_activity_text, data_json
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    
+
     const insertMany = db.transaction((items) => {
       for (const item of items) {
         insertStmt.run(...item);
       }
     });
-    
+
     let count = 0;
     let batch = [];
-    
+
     return new Promise((resolve, reject) => {
       pipeline.on('data', ({ value: company }) => {
         batch.push([
@@ -393,10 +393,10 @@ async function importGeneralData() {
           company.tootajate_arv,
           company.pohitegevusala_kood,
           company.pohitegevusala_tekst,
-          JSON.stringify(company) // Store full data as JSON
+          JSON.stringify(company), // Store full data as JSON
         ]);
         count++;
-        
+
         if (batch.length >= 1000) {
           insertMany(batch);
           batch = [];
@@ -405,7 +405,7 @@ async function importGeneralData() {
           }
         }
       });
-      
+
       pipeline.on('end', () => {
         if (batch.length > 0) {
           insertMany(batch);
@@ -413,7 +413,7 @@ async function importGeneralData() {
         console.log(`\n✅ Imported ${count} general data records`);
         resolve();
       });
-      
+
       pipeline.on('error', reject);
     });
   } catch (error) {
@@ -424,9 +424,9 @@ async function importGeneralData() {
 // Function to import shareholders from JSON
 async function importShareholders() {
   console.log('\n📥 Importing shareholders from JSON...');
-  
+
   const jsonPath = path.join(DATA_DIR, 'ettevotja_rekvisiidid__osanikud.json');
-  
+
   // Check if file exists
   try {
     await fs.access(jsonPath);
@@ -434,14 +434,13 @@ async function importShareholders() {
     console.log('⚠️  Shareholders file not found, skipping...');
     return;
   }
-  
+
   try {
     const streamJsonModule = await import('stream-json/streamers/StreamArray.js');
     const StreamArray = streamJsonModule.default;
-    
-    const pipeline = createReadStream(jsonPath)
-      .pipe(StreamArray.withParser());
-    
+
+    const pipeline = createReadStream(jsonPath).pipe(StreamArray.withParser());
+
     const insertStmt = db.prepare(`
       INSERT INTO shareholders (
         registry_code, shareholder_name, shareholder_type,
@@ -449,16 +448,16 @@ async function importShareholders() {
         start_date, end_date
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    
+
     const insertMany = db.transaction((items) => {
       for (const item of items) {
         insertStmt.run(...item);
       }
     });
-    
+
     let count = 0;
     let batch = [];
-    
+
     return new Promise((resolve, reject) => {
       pipeline.on('data', ({ value: company }) => {
         if (company.osanikud && Array.isArray(company.osanikud)) {
@@ -471,10 +470,10 @@ async function importShareholders() {
               shareholder.osa_valuuta,
               shareholder.osaluse_protsent,
               shareholder.algus_kpv,
-              shareholder.lopp_kpv
+              shareholder.lopp_kpv,
             ]);
             count++;
-            
+
             if (batch.length >= 1000) {
               insertMany(batch);
               batch = [];
@@ -485,7 +484,7 @@ async function importShareholders() {
           }
         }
       });
-      
+
       pipeline.on('end', () => {
         if (batch.length > 0) {
           insertMany(batch);
@@ -493,7 +492,7 @@ async function importShareholders() {
         console.log(`\n✅ Imported ${count} shareholders`);
         resolve();
       });
-      
+
       pipeline.on('error', reject);
     });
   } catch (error) {
@@ -504,9 +503,9 @@ async function importShareholders() {
 // Function to import beneficial owners from JSON
 async function importBeneficialOwners() {
   console.log('\n📥 Importing beneficial owners from JSON...');
-  
+
   const jsonPath = path.join(DATA_DIR, 'ettevotja_rekvisiidid__kasusaajad.json');
-  
+
   // Check if file exists
   try {
     await fs.access(jsonPath);
@@ -514,14 +513,13 @@ async function importBeneficialOwners() {
     console.log('⚠️  Beneficial owners file not found, skipping...');
     return;
   }
-  
+
   try {
     const streamJsonModule = await import('stream-json/streamers/StreamArray.js');
     const StreamArray = streamJsonModule.default;
-    
-    const pipeline = createReadStream(jsonPath)
-      .pipe(StreamArray.withParser());
-    
+
+    const pipeline = createReadStream(jsonPath).pipe(StreamArray.withParser());
+
     const insertStmt = db.prepare(`
       INSERT INTO beneficial_owners (
         registry_code, owner_name, owner_type,
@@ -529,16 +527,16 @@ async function importBeneficialOwners() {
         start_date, end_date
       ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
-    
+
     const insertMany = db.transaction((items) => {
       for (const item of items) {
         insertStmt.run(...item);
       }
     });
-    
+
     let count = 0;
     let batch = [];
-    
+
     return new Promise((resolve, reject) => {
       pipeline.on('data', ({ value: company }) => {
         if (company.kasusaajad && Array.isArray(company.kasusaajad)) {
@@ -550,10 +548,10 @@ async function importBeneficialOwners() {
               owner.kontrolli_tyyp,
               owner.kontrolli_protsent,
               owner.algus_kpv,
-              owner.lopp_kpv
+              owner.lopp_kpv,
             ]);
             count++;
-            
+
             if (batch.length >= 1000) {
               insertMany(batch);
               batch = [];
@@ -564,7 +562,7 @@ async function importBeneficialOwners() {
           }
         }
       });
-      
+
       pipeline.on('end', () => {
         if (batch.length > 0) {
           insertMany(batch);
@@ -572,7 +570,7 @@ async function importBeneficialOwners() {
         console.log(`\n✅ Imported ${count} beneficial owners`);
         resolve();
       });
-      
+
       pipeline.on('error', reject);
     });
   } catch (error) {
@@ -583,9 +581,9 @@ async function importBeneficialOwners() {
 // Function to import registry cards from JSON
 async function importRegistryCards() {
   console.log('\n📥 Importing registry cards from JSON...');
-  
+
   const jsonPath = path.join(DATA_DIR, 'ettevotja_rekvisiidid__registrikaardid.json');
-  
+
   // Check if file exists
   try {
     await fs.access(jsonPath);
@@ -593,39 +591,38 @@ async function importRegistryCards() {
     console.log('⚠️  Registry cards file not found, skipping...');
     return;
   }
-  
+
   try {
     const streamJsonModule = await import('stream-json/streamers/StreamArray.js');
     const StreamArray = streamJsonModule.default;
-    
-    const pipeline = createReadStream(jsonPath)
-      .pipe(StreamArray.withParser());
-    
+
+    const pipeline = createReadStream(jsonPath).pipe(StreamArray.withParser());
+
     const insertStmt = db.prepare(`
       INSERT OR REPLACE INTO registry_cards (
         registry_code, card_type, card_data, last_updated
       ) VALUES (?, ?, ?, ?)
     `);
-    
+
     const insertMany = db.transaction((items) => {
       for (const item of items) {
         insertStmt.run(...item);
       }
     });
-    
+
     let count = 0;
     let batch = [];
-    
+
     return new Promise((resolve, reject) => {
       pipeline.on('data', ({ value: card }) => {
         batch.push([
           card.ariregistri_kood,
           card.kaardi_tyyp || 'standard',
           JSON.stringify(card),
-          card.viimati_muudetud || new Date().toISOString()
+          card.viimati_muudetud || new Date().toISOString(),
         ]);
         count++;
-        
+
         if (batch.length >= 1000) {
           insertMany(batch);
           batch = [];
@@ -634,7 +631,7 @@ async function importRegistryCards() {
           }
         }
       });
-      
+
       pipeline.on('end', () => {
         if (batch.length > 0) {
           insertMany(batch);
@@ -642,7 +639,7 @@ async function importRegistryCards() {
         console.log(`\n✅ Imported ${count} registry cards`);
         resolve();
       });
-      
+
       pipeline.on('error', reject);
     });
   } catch (error) {
@@ -655,22 +652,22 @@ async function main() {
   try {
     // Import companies
     await importCompaniesFromCSV();
-    
+
     // Import board members
     await importBoardMembers();
-    
+
     // Import general data
     await importGeneralData();
-    
+
     // Import shareholders
     await importShareholders();
-    
+
     // Import beneficial owners
     await importBeneficialOwners();
-    
+
     // Import registry cards
     await importRegistryCards();
-    
+
     // Get statistics
     const stats = db.prepare('SELECT COUNT(*) as count FROM companies').get();
     const boardStats = db.prepare('SELECT COUNT(*) as count FROM board_members').get();
@@ -678,7 +675,7 @@ async function main() {
     const shareholderStats = db.prepare('SELECT COUNT(*) as count FROM shareholders').get();
     const beneficialStats = db.prepare('SELECT COUNT(*) as count FROM beneficial_owners').get();
     const cardStats = db.prepare('SELECT COUNT(*) as count FROM registry_cards').get();
-    
+
     console.log('\n📊 Database Statistics:');
     console.log(`  - Companies: ${stats.count}`);
     console.log(`  - Board members: ${boardStats.count}`);
@@ -686,25 +683,30 @@ async function main() {
     console.log(`  - Shareholders: ${shareholderStats.count}`);
     console.log(`  - Beneficial owners: ${beneficialStats.count}`);
     console.log(`  - Registry cards: ${cardStats.count}`);
-    
+
     // Test query for Dominance
     console.log('\n🔍 Testing query for Dominance OÜ:');
-    const dominance = db.prepare(`
+    const dominance = db
+      .prepare(
+        `
       SELECT c.*, bm.first_name, bm.last_name, bm.role_text, bm.start_date
       FROM companies c
       LEFT JOIN board_members bm ON c.registry_code = bm.registry_code
       WHERE c.name LIKE '%Dominance%'
-    `).all();
-    
+    `
+      )
+      .all();
+
     console.log(`  Found: ${dominance.length} results`);
     if (dominance.length > 0) {
       console.log(`  Company: ${dominance[0].name}`);
-      console.log(`  Board member: ${dominance[0].first_name} ${dominance[0].last_name} (${dominance[0].role_text})`);
+      console.log(
+        `  Board member: ${dominance[0].first_name} ${dominance[0].last_name} (${dominance[0].role_text})`
+      );
     }
-    
+
     console.log('\n✅ Database created successfully!');
     console.log(`📁 Location: ${DB_PATH}`);
-    
   } catch (error) {
     console.error('❌ Error:', error.message);
     process.exit(1);

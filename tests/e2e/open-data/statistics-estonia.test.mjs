@@ -2,7 +2,7 @@
 import { StatEEClient } from './dist/stat-ee-client.js';
 
 console.log('🇪🇪 Testing Statistics Estonia API Client with REAL DATA\n');
-console.log('=' .repeat(50));
+console.log('='.repeat(50));
 
 const client = new StatEEClient('en');
 
@@ -12,7 +12,7 @@ async function test() {
     console.log('\n📍 Test 1: Getting main statistical categories...');
     const categories = await client.getMainCategories();
     console.log(`✅ Found ${categories.length} main categories:`);
-    categories.slice(0, 5).forEach(cat => {
+    categories.slice(0, 5).forEach((cat) => {
       console.log(`   - ${cat.text} (${cat.type === 'l' ? 'folder' : 'table'})`);
     });
 
@@ -39,7 +39,7 @@ async function test() {
     console.log('\n📍 Test 3: Searching for tables about "GDP"...');
     const gdpTables = await client.searchTables('GDP');
     console.log(`✅ Found ${gdpTables.length} tables related to GDP:`);
-    gdpTables.slice(0, 3).forEach(table => {
+    gdpTables.slice(0, 3).forEach((table) => {
       console.log(`   - ${table.text}`);
       if (table.updated) console.log(`     Updated: ${table.updated}`);
     });
@@ -75,7 +75,7 @@ async function test() {
       console.log('✅ Table metadata retrieved:');
       console.log(`   Title: ${metadata.title}`);
       console.log(`   Variables: ${metadata.variables.length}`);
-      metadata.variables.slice(0, 3).forEach(v => {
+      metadata.variables.slice(0, 3).forEach((v) => {
         console.log(`   - ${v.text} (${v.code}): ${v.values.length} values`);
       });
     } catch (error) {
@@ -87,22 +87,19 @@ async function test() {
     const testData = {
       columns: [
         { code: 'Year', text: 'Year' },
-        { code: 'Value', text: 'Population' }
+        { code: 'Value', text: 'Population' },
       ],
-      data: [
-        { key: ['2023'], values: ['1,365,884'] }
-      ],
+      data: [{ key: ['2023'], values: ['1,365,884'] }],
       comments: [],
-      metadata: []
+      metadata: [],
     };
     const formatted = client.formatDataResponse(testData);
     console.log('✅ Data formatted successfully:');
     console.log(`   ${JSON.stringify(formatted[0])}`);
 
-    console.log('\n' + '=' .repeat(50));
+    console.log('\n' + '='.repeat(50));
     console.log('✅ All tests completed!');
     console.log('📊 The Statistics Estonia API client is working with REAL data!');
-    
   } catch (error) {
     console.error('\n❌ Test failed:', error.message);
     console.error('Details:', error);

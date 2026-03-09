@@ -93,7 +93,7 @@ export class RIKOpenDataClient {
     // Set DATA_DIR relative to the compiled JS file location
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     this.DATA_DIR = path.join(__dirname, '../../.rik-data');
-    
+
     this.client = axios.create({
       baseURL: this.BASE_URL,
       timeout: 60000,
@@ -214,9 +214,11 @@ export class RIKOpenDataClient {
 
       const companyName = company.nimi || (company as any)[' nimi'] || ''; // Handle BOM
       // Use normalized address or location in address, as ettevotja_aadress is often empty
-      const companyAddress = company.ads_normaliseeritud_taisaadress || 
-                            company.asukoht_ettevotja_aadressis || 
-                            company.ettevotja_aadress || '';
+      const companyAddress =
+        company.ads_normaliseeritud_taisaadress ||
+        company.asukoht_ettevotja_aadressis ||
+        company.ettevotja_aadress ||
+        '';
 
       if (params.registryCode && company.ariregistri_kood === params.registryCode) {
         match = true;
@@ -245,9 +247,11 @@ export class RIKOpenDataClient {
           name: company.nimi || (company as any)[' nimi'] || '', // Handle BOM issue
           status: company.ettevotja_staatus,
           status_text: company.ettevotja_staatus_tekstina,
-          address: company.ads_normaliseeritud_taisaadress || 
-                  company.asukoht_ettevotja_aadressis || 
-                  company.ettevotja_aadress || '',
+          address:
+            company.ads_normaliseeritud_taisaadress ||
+            company.asukoht_ettevotja_aadressis ||
+            company.ettevotja_aadress ||
+            '',
           vat_number: company.kmkr_nr,
         });
 
@@ -305,10 +309,10 @@ export class RIKOpenDataClient {
   async getBoardMembers(registryCode: string): Promise<BoardMember[]> {
     try {
       const boardData = await this.loadJsonData('board_members');
-      
+
       // Find the company entry
       const companyEntry = boardData.find((entry: any) => entry.ariregistri_kood === registryCode);
-      
+
       if (!companyEntry || !companyEntry.kaardile_kantud_isikud) {
         return [];
       }
