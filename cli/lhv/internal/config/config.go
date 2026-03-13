@@ -57,6 +57,10 @@ func (c *Config) BuildCookieHeader() string {
 }
 
 func LoadOptional() *Config {
+	if cfg, err := LoadFromKeyring(); err == nil && cfg.IsValid() {
+		return cfg
+	}
+
 	return &Config{
 		SessionID:  os.Getenv("LHV_SESSION_ID"),
 		JSESSIONID: os.Getenv("LHV_JSESSIONID"),
