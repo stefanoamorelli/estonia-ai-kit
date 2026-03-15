@@ -1,4 +1,4 @@
-module github.com/stefanoamorelli/lhv-cli
+module github.com/stefanoamorelli/estonia-ai-kit/cli/lhv
 
 go 1.25.6
 

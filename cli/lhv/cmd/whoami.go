@@ -5,8 +5,8 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/stefanoamorelli/lhv-cli/internal/client"
-	"github.com/stefanoamorelli/lhv-cli/internal/config"
+	"github.com/stefanoamorelli/estonia-ai-kit/cli/lhv/internal/client"
+	"github.com/stefanoamorelli/estonia-ai-kit/cli/lhv/internal/config"
 )
 
 var whoamiCmd = &cobra.Command{
