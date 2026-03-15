@@ -59,10 +59,9 @@ This toolkit covers **government services** (tax, business registry, legal data,
 
 ### 🏦 Private Sector Services
 
-| Package        | Description                       | Type        | Auth     | Status     |
-| -------------- | --------------------------------- | ----------- | -------- | ---------- |
-| `cli/lhv`      | LHV Bank - accounts, transactions | CLI / Skill | Smart-ID | 🔜 Planned |
-| `cli/swedbank` | Swedbank - accounts, transactions | CLI / Skill | Smart-ID | 🔜 Planned |
+| Package                | Description                                 | Type        | Auth     | Status     |
+| ---------------------- | ------------------------------------------- | ----------- | -------- | ---------- |
+| [`cli/lhv`](./cli/lhv) | LHV Bank - accounts, transactions, payments | CLI / Skill | Smart-ID | ✅ Working |
 
 > [!IMPORTANT]
 > **CLI tools that require authentication** (Smart-ID, ID-card) authenticate as _you_ and access _your_ data. Sessions expire after ~30 minutes.
@@ -72,18 +71,28 @@ This toolkit covers **government services** (tax, business registry, legal data,
 ### CLI Tools / Skills
 
 ```bash
-# Build the EMTA CLI
-cd cli/emta
-go build -o emta-cli .
+# Install the EMTA CLI
+go install github.com/stefanoamorelli/estonia-ai-kit/cli/emta@latest
 
-# Login via Smart-ID QR code
-./emta-cli login
+# Install the LHV CLI
+go install github.com/stefanoamorelli/estonia-ai-kit/cli/lhv@latest
+```
 
-# List your TSD declarations
-./emta-cli tsd list
+**EMTA** (Tax & Customs):
 
-# Show declaration details
-./emta-cli tsd show <declaration-id>
+```bash
+emta-cli login                     # Login via Smart-ID QR code
+emta-cli tsd list                  # List your TSD declarations
+emta-cli tsd show <declaration-id> # Show declaration details
+```
+
+**LHV Bank**:
+
+```bash
+lhv auth --interactive             # Authenticate via Smart-ID
+lhv get-accounts                   # List accounts
+lhv get-transactions               # View transactions
+lhv pay --help                     # SEPA payment options
 ```
 
 ### MCP Servers
@@ -113,15 +122,34 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 }
 ```
 
+### Claude Code Plugins
+
+This repository includes a [Claude Code plugin marketplace](https://docs.anthropic.com/en/docs/claude-code/plugins) with ready-to-use skills for AI-assisted workflows.
+
+```bash
+# Add the marketplace (one-time setup)
+/plugin marketplace add stefanoamorelli/estonia-ai-kit
+
+# Install a plugin (e.g., LHV Bank or EMTA)
+/plugin install lhv@estonia-ai-kit
+/plugin install emta@estonia-ai-kit
+```
+
+Each plugin bundles a skill file that teaches Claude Code how to use the corresponding CLI tool. The CLI binary must be installed separately (see Quick Start above).
+
 ## 🛠️ Project Structure
 
 ```
 estonia-ai-kit/
 ├── cli/                       # CLI tools / skills (authenticated services)
-│   └── emta/                  # EMTA Tax & Customs CLI (Go)
+│   ├── emta/                  # EMTA Tax & Customs CLI (Go)
+│   └── lhv/                   # LHV Bank CLI (Go)
 ├── mcp/                       # MCP servers
 │   ├── rik/                   # Business Register
 │   └── open-data/             # Statistics Estonia
+├── plugins/                   # Claude Code plugin marketplace
+│   ├── emta/                  # EMTA plugin + skill
+│   └── lhv/                   # LHV plugin + skill
 ├── packages/                  # Shared TypeScript libraries
 │   ├── shared/                # Common utilities
 │   └── riigiteataja-api-client/
@@ -159,6 +187,7 @@ bun run build
 
 # Go CLI tools
 cd cli/emta && go build -o emta-cli .
+cd cli/lhv && make install
 ```
 
 ### Testing

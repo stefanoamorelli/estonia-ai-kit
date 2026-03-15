@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/stefanoamorelli/lhv-cli/internal/config"
+	"github.com/stefanoamorelli/estonia-ai-kit/cli/lhv/internal/config"
 )
 
 type Account struct {

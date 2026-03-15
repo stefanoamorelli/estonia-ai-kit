@@ -1,4 +1,4 @@
-# lhv-cli
+# LHV CLI
 
 CLI for LHV Bank. Authenticate with Smart-ID, view accounts and transactions, switch between personal and business profiles, and make SEPA payments.
 
@@ -25,8 +25,14 @@ CLI for LHV Bank. Authenticate with Smart-ID, view accounts and transactions, sw
 ## Install
 
 ```bash
-git clone https://github.com/stefanoamorelli/lhv-cli.git
-cd lhv-cli
+go install github.com/stefanoamorelli/estonia-ai-kit/cli/lhv@latest
+```
+
+Or build from source:
+
+```bash
+git clone https://github.com/stefanoamorelli/estonia-ai-kit.git
+cd estonia-ai-kit/cli/lhv
 make install
 ```
 
@@ -123,4 +129,4 @@ make clean         # Remove build artifacts
 
 This project is licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE).
 
-Copyright © 2025 [Stefano Amorelli](https://amorelli.tech) ([stefano@amorelli.tech](mailto:stefano@amorelli.tech))
+Copyright (c) 2025 [Stefano Amorelli](https://amorelli.tech) ([stefano@amorelli.tech](mailto:stefano@amorelli.tech))
