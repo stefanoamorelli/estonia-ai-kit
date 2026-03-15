@@ -3,15 +3,21 @@
 Claude Code plugin for interacting with LHV Bank. Authenticate with Smart-ID, view accounts and transactions, switch between personal and business profiles, and make SEPA payments.
 
 > [!IMPORTANT]
-> This plugin is experimental and not affiliated with LHV Bank. It requires the [lhv-cli](https://github.com/stefanoamorelli/lhv-cli) binary to be installed and available on your PATH.
+> This plugin is experimental and not affiliated with LHV Bank. It requires the [lhv CLI](https://github.com/stefanoamorelli/estonia-ai-kit/tree/main/cli/lhv) binary to be installed and available on your PATH.
 
 ## Prerequisites
 
-Install the LHV CLI from [github.com/stefanoamorelli/lhv-cli](https://github.com/stefanoamorelli/lhv-cli):
+Install the LHV CLI from the [estonia-ai-kit](https://github.com/stefanoamorelli/estonia-ai-kit) repository:
 
 ```bash
-git clone https://github.com/stefanoamorelli/lhv-cli.git
-cd lhv-cli
+go install github.com/stefanoamorelli/estonia-ai-kit/cli/lhv@latest
+```
+
+Or build from source:
+
+```bash
+git clone https://github.com/stefanoamorelli/estonia-ai-kit.git
+cd estonia-ai-kit/cli/lhv
 make install
 ```
 
@@ -24,7 +30,7 @@ make install
 
 ## Security
 
-This plugin can execute real banking operations. Review the [security notice](https://github.com/stefanoamorelli/lhv-cli#lhv-cli) in the lhv-cli repository before use.
+This plugin can execute real banking operations. Review the [security notice](https://github.com/stefanoamorelli/estonia-ai-kit/tree/main/cli/lhv#lhv-cli) before use.
 
 Further reading: [OWASP Top 10 for LLM Applications](https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025/) | [OWASP Top 10 for Agentic Applications](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/)
 
