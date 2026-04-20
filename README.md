@@ -49,13 +49,13 @@ This toolkit covers **government services** (tax, business registry, legal data,
 
 ### 🏛️ Government Services
 
-| Package                                                   | Description                                   | Type        | Auth     | Status     |
-| --------------------------------------------------------- | --------------------------------------------- | ----------- | -------- | ---------- |
-| [`@estonia-ai-kit/rik-mcp-server`](./mcp/rik)             | Estonian Business Register (RIK)              | MCP Server  | None     | 🔶 WIP     |
-| [`@estonia-ai-kit/open-data-mcp-server`](./mcp/open-data) | Statistics Estonia / Open Data Portal         | MCP Server  | None     | 🔶 WIP     |
-| [`cli/emta`](./cli/emta)                                  | Tax & Customs Board (EMTA) - TSD + KMD tools  | CLI / Skill | Smart-ID | ✅ Working |
-| [`rag/riigiteataja`](./rag/riigiteataja)                  | Estonian Legal Document RAG pipeline          | RAG         | None     | 🔶 WIP     |
-| [`@estonia-ai-kit/shared`](./packages/shared)             | Shared utilities and types                    | Library     | -        | ✅ Ready   |
+| Package                                                   | Description                                  | Type        | Auth     | Status     |
+| --------------------------------------------------------- | -------------------------------------------- | ----------- | -------- | ---------- |
+| [`@estonia-ai-kit/rik-mcp-server`](./mcp/rik)             | Estonian Business Register (RIK)             | MCP Server  | None     | 🔶 WIP     |
+| [`@estonia-ai-kit/open-data-mcp-server`](./mcp/open-data) | Statistics Estonia / Open Data Portal        | MCP Server  | None     | 🔶 WIP     |
+| [`cli/emta`](./cli/emta)                                  | Tax & Customs Board (EMTA) - TSD + KMD tools | CLI / Skill | Smart-ID | ✅ Working |
+| [`rag/riigiteataja`](./rag/riigiteataja)                  | Estonian Legal Document RAG pipeline         | RAG         | None     | 🔶 WIP     |
+| [`@estonia-ai-kit/shared`](./packages/shared)             | Shared utilities and types                   | Library     | -        | ✅ Ready   |
 
 ### 🏦 Private Sector Services
 
