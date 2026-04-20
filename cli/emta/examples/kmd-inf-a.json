@@ -1,0 +1,13 @@
+{
+  "rows": [
+    {
+      "partner_code": "10000000",
+      "partner_name": "EXAMPLE CUSTOMER OÜ",
+      "invoice_number": "INV-2026-001",
+      "invoice_date": "27.02.2026",
+      "invoice_sum": "1000,00",
+      "tax_rate": "24%",
+      "sum_for_rate_in_period": "1000,00"
+    }
+  ]
+}

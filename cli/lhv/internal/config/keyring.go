@@ -3,13 +3,24 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/zalando/go-keyring"
 )
 
 const (
-	serviceName = "lhv-cli"
-	sessionKey  = "session"
+	serviceName        = "lhv-cli"
+	sessionKey         = "session"
+	sessionStoreTimout = 5 * time.Second
+)
+
+var (
+	keyringSetFunc      = keyring.Set
+	keyringGetFunc      = keyring.Get
+	keyringDeleteFunc   = keyring.Delete
+	sessionFilePathFunc = defaultSessionFilePath
 )
 
 type SessionData struct {
@@ -53,24 +64,23 @@ func SaveToKeyring(cookies map[string]string, accountID string, userID int64, us
 		return fmt.Errorf("failed to marshal session: %w", err)
 	}
 
-	if err := keyring.Set(serviceName, sessionKey, string(data)); err != nil {
-		return fmt.Errorf("failed to save to keyring: %w", err)
+	if err := runWithTimeout(func() error {
+		return keyringSetFunc(serviceName, sessionKey, string(data))
+	}, sessionStoreTimout); err == nil {
+		return nil
 	}
 
-	return nil
+	return writeSessionFile(data)
 }
 
 func LoadFromKeyring() (*Config, error) {
-	data, err := keyring.Get(serviceName, sessionKey)
+	data, err := loadSessionData()
 	if err != nil {
-		if err == keyring.ErrNotFound {
-			return nil, fmt.Errorf("no session found - run 'lhv auth' to authenticate")
-		}
-		return nil, fmt.Errorf("failed to read from keyring: %w", err)
+		return nil, fmt.Errorf("no session found - run 'lhv auth' to authenticate")
 	}
 
 	var session SessionData
-	if err := json.Unmarshal([]byte(data), &session); err != nil {
+	if err := json.Unmarshal(data, &session); err != nil {
 		return nil, fmt.Errorf("failed to parse session data: %w", err)
 	}
 
@@ -87,21 +97,24 @@ func LoadFromKeyring() (*Config, error) {
 }
 
 func DeleteFromKeyring() error {
-	err := keyring.Delete(serviceName, sessionKey)
+	err := keyringDeleteFunc(serviceName, sessionKey)
 	if err != nil && err != keyring.ErrNotFound {
 		return fmt.Errorf("failed to delete from keyring: %w", err)
+	}
+	if path, pathErr := sessionFilePathFunc(); pathErr == nil {
+		_ = os.Remove(path)
 	}
 	return nil
 }
 
 func UpdateAccountInKeyring(accountID string, userID int64, userName string, userType string) error {
-	data, err := keyring.Get(serviceName, sessionKey)
+	data, err := loadSessionData()
 	if err != nil {
 		return fmt.Errorf("no session found - run 'lhv auth' to authenticate")
 	}
 
 	var session SessionData
-	if err := json.Unmarshal([]byte(data), &session); err != nil {
+	if err := json.Unmarshal(data, &session); err != nil {
 		return fmt.Errorf("failed to parse session data: %w", err)
 	}
 
@@ -117,14 +130,91 @@ func UpdateAccountInKeyring(accountID string, userID int64, userName string, use
 		return fmt.Errorf("failed to marshal session: %w", err)
 	}
 
-	if err := keyring.Set(serviceName, sessionKey, string(updated)); err != nil {
-		return fmt.Errorf("failed to save to keyring: %w", err)
+	if err := runWithTimeout(func() error {
+		return keyringSetFunc(serviceName, sessionKey, string(updated))
+	}, sessionStoreTimout); err == nil {
+		return nil
 	}
 
-	return nil
+	return writeSessionFile(updated)
 }
 
 func HasKeyringSession() bool {
-	_, err := keyring.Get(serviceName, sessionKey)
+	_, err := loadSessionData()
 	return err == nil
+}
+
+func loadSessionData() ([]byte, error) {
+	data, err := runWithTimeoutValue(func() (string, error) {
+		return keyringGetFunc(serviceName, sessionKey)
+	}, sessionStoreTimout)
+	if err == nil {
+		return []byte(data), nil
+	}
+
+	return os.ReadFile(mustSessionFilePath())
+}
+
+func writeSessionFile(data []byte) error {
+	path := mustSessionFilePath()
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return fmt.Errorf("failed to create session dir: %w", err)
+	}
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		return fmt.Errorf("failed to write session file: %w", err)
+	}
+	return nil
+}
+
+func mustSessionFilePath() string {
+	path, err := sessionFilePathFunc()
+	if err != nil {
+		return filepath.Join(".config", "lhv-cli", "session.json")
+	}
+	return path
+}
+
+func defaultSessionFilePath() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(configDir, "lhv-cli", "session.json"), nil
+}
+
+func runWithTimeout(fn func() error, timeout time.Duration) error {
+	done := make(chan error, 1)
+
+	go func() {
+		done <- fn()
+	}()
+
+	select {
+	case err := <-done:
+		return err
+	case <-time.After(timeout):
+		return fmt.Errorf("timed out after %s", timeout)
+	}
+}
+
+func runWithTimeoutValue[T any](fn func() (T, error), timeout time.Duration) (T, error) {
+	type result struct {
+		value T
+		err   error
+	}
+
+	done := make(chan result, 1)
+
+	go func() {
+		value, err := fn()
+		done <- result{value: value, err: err}
+	}()
+
+	select {
+	case res := <-done:
+		return res.value, res.err
+	case <-time.After(timeout):
+		var zero T
+		return zero, fmt.Errorf("timed out after %s", timeout)
+	}
 }

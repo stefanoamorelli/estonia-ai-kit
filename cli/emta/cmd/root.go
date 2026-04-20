@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -47,8 +48,18 @@ type sessionFile struct {
 }
 
 const (
-	keyringService = "emta-cli"
-	keyringUser    = "session"
+	keyringService        = "emta-cli"
+	keyringUser           = "session"
+	sessionStoreTimeout   = 5 * time.Second
+	kmdSetupWarmupTimeout = 10 * time.Second
+	tsdSetupWarmupTimeout = 5 * time.Second
+)
+
+var (
+	keyringSetFunc      = keyring.Set
+	keyringGetFunc      = keyring.Get
+	keyringDeleteFunc   = keyring.Delete
+	sessionFilePathFunc = defaultSessionFilePath
 )
 
 func saveSession(s *auth.Session) error {
@@ -68,24 +79,33 @@ func saveSession(s *auth.Session) error {
 		for _, path := range []string{
 			"https://maasikas.emta.ee/",
 			"https://maasikas.emta.ee/v1/",
+			"https://maasikas.emta.ee/customer-kmd2/",
 			"https://maasikas.emta.ee/tsd2/",
 			"https://maasikas.emta.ee/wfm/",
 			"https://maasikas.emta.ee/wfm-api/",
 			"https://maasikas.emta.ee/customer-portal/",
 			"https://tara.ria.ee/",
+			"https://govsso.ria.ee/",
 		} {
 			u, _ := url.Parse(path)
 			for _, c := range s.Client.Jar.Cookies(u) {
-				key := c.Name + "=" + c.Value
+				key := u.Host + "|" + c.Path + "|" + c.Name + "=" + c.Value
 				if seen[key] {
 					continue
 				}
 				seen[key] = true
+				path := c.Path
+				if path == "" {
+					path = u.Path
+					if path == "" {
+						path = "/"
+					}
+				}
 				sf.Cookies = append(sf.Cookies, savedCookie{
 					Name:   c.Name,
 					Value:  c.Value,
 					Domain: u.Host,
-					Path:   c.Path,
+					Path:   path,
 				})
 			}
 		}
@@ -95,34 +115,51 @@ func saveSession(s *auth.Session) error {
 	if err != nil {
 		return err
 	}
-	return keyring.Set(keyringService, keyringUser, string(data))
+	if err := runWithTimeout(func() error {
+		return keyringSetFunc(keyringService, keyringUser, string(data))
+	}, sessionStoreTimeout); err == nil {
+		return nil
+	}
+
+	return writeSessionFile(data)
 }
 
 func loadSession() (*auth.Session, error) {
-	data, err := keyring.Get(keyringService, keyringUser)
+	data, err := loadSessionData()
 	if err != nil {
 		return nil, fmt.Errorf("not logged in. Run 'emta-cli login' first")
 	}
 	var sf sessionFile
-	if err := json.Unmarshal([]byte(data), &sf); err != nil {
+	if err := json.Unmarshal(data, &sf); err != nil {
 		return nil, fmt.Errorf("corrupt session data: %w", err)
 	}
 	session := auth.LoginWithToken(sf.AccessToken, sf.SessionID)
 	session.PrincipalID = sf.PrincipalID
+	migrateLegacyCookiePaths(&sf)
 
-	// Restore cookies into the jar, grouped by domain.
-	// Set all cookies with Path=/ so they're sent for all paths.
+	// Restore cookies into the jar, preserving original paths so app-specific
+	// session cookies (customer-portal, customer-kmd2, wfm, etc.) do not
+	// overwrite each other.
 	if len(sf.Cookies) > 0 && session.Client.Jar != nil {
-		byDomain := make(map[string][]*http.Cookie)
+		type cookieTarget struct {
+			domain string
+			path   string
+		}
+		byTarget := make(map[cookieTarget][]*http.Cookie)
 		for _, sc := range sf.Cookies {
-			byDomain[sc.Domain] = append(byDomain[sc.Domain], &http.Cookie{
+			path := sc.Path
+			if path == "" {
+				path = "/"
+			}
+			target := cookieTarget{domain: sc.Domain, path: path}
+			byTarget[target] = append(byTarget[target], &http.Cookie{
 				Name:  sc.Name,
 				Value: sc.Value,
-				Path:  "/",
+				Path:  path,
 			})
 		}
-		for domain, cookies := range byDomain {
-			u, _ := url.Parse("https://" + domain + "/")
+		for target, cookies := range byTarget {
+			u, _ := url.Parse("https://" + target.domain + target.path)
 			session.Client.Jar.SetCookies(u, cookies)
 		}
 	}
@@ -130,8 +167,120 @@ func loadSession() (*auth.Session, error) {
 	return session, nil
 }
 
+func migrateLegacyCookiePaths(sf *sessionFile) {
+	jSessionByDomain := make(map[string]int)
+	for i := range sf.Cookies {
+		c := &sf.Cookies[i]
+		if c.Path != "" {
+			continue
+		}
+		switch c.Name {
+		case "customer-kmd2_JSESSIONID", "_WL_AUTHCOOKIE_customer-kmd2_JSESSIONID":
+			c.Path = "/customer-kmd2/"
+		case "AUTH-STATE", "AUTH-REQUEST", "LOGOUT-STATE", "AUTH-SESSION-CLIENT":
+			c.Path = "/v1/"
+		case "MTASSO-TAG-gjxldu", "cf_clearance", "__cf_bm":
+			c.Path = "/"
+		case "JSESSIONID":
+			jSessionByDomain[c.Domain]++
+			switch jSessionByDomain[c.Domain] {
+			case 1:
+				c.Path = "/"
+			case 2:
+				c.Path = "/v1/"
+			case 3:
+				c.Path = "/wfm/"
+			case 4:
+				c.Path = "/customer-portal/"
+			default:
+				c.Path = "/"
+			}
+		default:
+			c.Path = "/"
+		}
+	}
+}
+
 func deleteSession() {
-	_ = keyring.Delete(keyringService, keyringUser)
+	_ = keyringDeleteFunc(keyringService, keyringUser)
+	if path, err := sessionFilePathFunc(); err == nil {
+		_ = os.Remove(path)
+	}
+}
+
+func runWithTimeout(fn func() error, timeout time.Duration) error {
+	done := make(chan error, 1)
+
+	go func() {
+		done <- fn()
+	}()
+
+	select {
+	case err := <-done:
+		return err
+	case <-time.After(timeout):
+		return fmt.Errorf("timed out after %s", timeout)
+	}
+}
+
+func loadSessionData() ([]byte, error) {
+	data, err := runWithTimeoutValue(func() (string, error) {
+		return keyringGetFunc(keyringService, keyringUser)
+	}, sessionStoreTimeout)
+	if err == nil {
+		return []byte(data), nil
+	}
+
+	return os.ReadFile(mustSessionFilePath())
+}
+
+func writeSessionFile(data []byte) error {
+	path := mustSessionFilePath()
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return fmt.Errorf("creating session dir: %w", err)
+	}
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		return fmt.Errorf("writing session file: %w", err)
+	}
+	return nil
+}
+
+func mustSessionFilePath() string {
+	path, err := sessionFilePathFunc()
+	if err != nil {
+		return filepath.Join(".config", "emta-cli", "session.json")
+	}
+	return path
+}
+
+func defaultSessionFilePath() (string, error) {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(configDir, "emta-cli", "session.json"), nil
+}
+
+func runWithTimeoutValue[T any](fn func() (T, error), timeout time.Duration) (T, error) {
+	type result struct {
+		value T
+		err   error
+	}
+
+	done := make(chan result, 1)
+
+	go func() {
+		value, err := fn()
+		done <- result{value: value, err: err}
+	}()
+
+	select {
+	case res := <-done:
+		return res.value, res.err
+	case <-time.After(timeout):
+		var zero T
+		return zero, fmt.Errorf("timed out after %s", timeout)
+	}
 }
 
 func newTable() table.Writer {
@@ -208,7 +357,10 @@ func init() {
 
 			// Establish TSD session cookies while we have a live auth session
 			client := api.NewClient(session)
-			if err := client.SetupTSDSession(); err != nil {
+			if err := runWithTimeout(client.SetupKMDSession, kmdSetupWarmupTimeout); err != nil {
+				fmt.Printf("Warning: could not pre-establish KMD session: %v\n", err)
+			}
+			if err := runWithTimeout(client.SetupTSDSession, tsdSetupWarmupTimeout); err != nil {
 				fmt.Printf("Warning: could not pre-establish TSD session: %v\n", err)
 			}
 
@@ -218,7 +370,7 @@ func init() {
 
 			green := color.New(color.FgGreen, color.Bold)
 			green.Println("Logged in successfully!")
-			fmt.Println("Session stored in OS keychain.")
+			fmt.Println("Session stored.")
 			return nil
 		},
 	})
@@ -229,7 +381,7 @@ func init() {
 		Short: "Delete saved session from OS keychain",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			deleteSession()
-			fmt.Println("Session removed from OS keychain.")
+			fmt.Println("Session removed.")
 			return nil
 		},
 	})
