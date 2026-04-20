@@ -2,12 +2,10 @@ name: Riigiteataja API Client CI/CD
 
 on:
   push:
-    branches: [main, develop]
     paths:
       - 'packages/riigiteataja-api-client/**'
       - '.github/workflows/riigiteataja-api-client.yml'
   pull_request:
-    branches: [main, develop]
     paths:
       - 'packages/riigiteataja-api-client/**'
       - '.github/workflows/riigiteataja-api-client.yml'

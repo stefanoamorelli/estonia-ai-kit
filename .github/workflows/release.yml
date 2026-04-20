@@ -93,8 +93,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create Git tag
+        id: version
         run: |
-          VERSION=$(node -p "require('./mcp/riigiteataja/package.json').version")
+          VERSION=$(node -p "require('./packages/riigiteataja-api-client/package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "v$VERSION" -m "Release v$VERSION"
@@ -103,15 +105,14 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.VERSION }}
-          name: Release v${{ env.VERSION }}
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
           body: |
-            ## 🚀 Release v${{ env.VERSION }}
+            ## 🚀 Release v${{ steps.version.outputs.version }}
 
             ### Packages Released:
             - @estonia-ai-kit/rik-mcp-server
             - @estonia-ai-kit/open-data-mcp-server
-            - @estonia-ai-kit/riigiteataja-mcp-server
             - @estonia-ai-kit/riigiteataja-api-client
             - @estonia-ai-kit/shared
           draft: false
