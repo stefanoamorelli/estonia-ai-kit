@@ -1,0 +1,12 @@
+{
+  "rows": [
+    {
+      "partner_code": "12345678",
+      "partner_name": "Example Supplier OÜ",
+      "invoice_number": "INV-123",
+      "invoice_date": "15.03.2026",
+      "invoice_sum_vat": "124,00",
+      "vat_in_period": "24,00"
+    }
+  ]
+}

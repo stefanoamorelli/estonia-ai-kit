@@ -92,6 +92,7 @@ func newAuthClient() (*http.Client, error) {
 			if len(via) >= 20 {
 				return fmt.Errorf("stopped after %d redirects", len(via))
 			}
+			prepareRedirectRequest(req, via)
 			return nil
 		},
 	}, nil
@@ -111,7 +112,13 @@ func Login(renderQR func(deviceLink string) error) (*Session, error) {
 	// the TARA login page at tara.ria.ee.
 	// ------------------------------------------------------------------
 	fmt.Println("Initiating login flow...")
-	resp, err := client.Get(baseURL + "/customer-portal/client/taxes")
+	req, err := http.NewRequest("GET", baseURL+"/customer-portal/client/taxes", nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating login request: %w", err)
+	}
+	setBrowserNavigationHeaders(req)
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("initiating login: %w", err)
 	}
@@ -124,22 +131,32 @@ func Login(renderQR func(deviceLink string) error) (*Session, error) {
 	finalURL := resp.Request.URL.String()
 
 	// The redirect chain lands on the EMTA login page at /v1/login?authst=...
-	// We need to POST the Smart-ID provider form (with the authst token) to
-	// get redirected to TARA.
+	// We need to POST the EMTA provider form (with the authst token) to get
+	// redirected to TARA. EMTA now serves the state auth gateway first
+	// (`provider=govsso.client`) rather than exposing Smart-ID directly.
 	if strings.Contains(finalURL, "maasikas.emta.ee/v1/login") {
-		// Extract the authst hidden field from the Smart-ID form
-		authstRe := regexp.MustCompile(`action="provider=tara\.smartid"[^>]*>[\s\S]*?name="authst"\s+value="([^"]+)"`)
-		authst := ""
-		if m := authstRe.FindSubmatch(body); m != nil {
-			authst = string(m[1])
+		providerAction, authst, err := extractProviderForm(body)
+		if err != nil {
+			return nil, err
 		}
 
-		smartIDURL := baseURL + "/v1/provider=tara.smartid"
+		providerURL, err := resp.Request.URL.Parse(providerAction)
+		if err != nil {
+			return nil, fmt.Errorf("resolving provider action %q: %w", providerAction, err)
+		}
 
 		fmt.Println("Redirecting to Smart-ID via TARA...")
-		resp, err = client.PostForm(smartIDURL, url.Values{
-			"authst": {authst},
-		})
+		form := url.Values{"authst": {authst}}
+		postReq, err := http.NewRequest("POST", providerURL.String(), strings.NewReader(form.Encode()))
+		if err != nil {
+			return nil, fmt.Errorf("creating provider request: %w", err)
+		}
+		setBrowserNavigationHeaders(postReq)
+		postReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		postReq.Header.Set("Origin", baseURL)
+		postReq.Header.Set("Referer", finalURL)
+
+		resp, err = client.Do(postReq)
 		if err != nil {
 			return nil, fmt.Errorf("posting to Smart-ID provider: %w", err)
 		}
@@ -283,6 +300,33 @@ func doPoll(client *http.Client) (*pollResponse, error) {
 		return nil, fmt.Errorf("parsing poll response: %w (body: %s)", err, string(data))
 	}
 	return &poll, nil
+}
+
+func prepareRedirectRequest(req *http.Request, via []*http.Request) {
+	setBrowserNavigationHeaders(req)
+	if len(via) > 0 && via[len(via)-1] != nil && via[len(via)-1].URL != nil {
+		req.Header.Set("Referer", via[len(via)-1].URL.String())
+	}
+}
+
+func setBrowserNavigationHeaders(req *http.Request) {
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+	req.Header.Set("Upgrade-Insecure-Requests", "1")
+	req.Header.Set("Sec-Fetch-Dest", "document")
+	req.Header.Set("Sec-Fetch-Mode", "navigate")
+	req.Header.Set("Sec-Fetch-Site", "same-origin")
+	req.Header.Set("Sec-Fetch-User", "?1")
+	req.Header.Set("User-Agent", "Mozilla/5.0")
+}
+
+func extractProviderForm(html []byte) (action string, authst string, err error) {
+	formRe := regexp.MustCompile(`action="(provider=[^"]+)"[^>]*>[\s\S]*?name="authst"\s+value="([^"]+)"`)
+	m := formRe.FindSubmatch(html)
+	if m == nil {
+		return "", "", fmt.Errorf("could not find EMTA provider form on login page")
+	}
+	return string(m[1]), string(m[2]), nil
 }
 
 // extractCSRF finds the _csrf token in HTML content. It looks for the

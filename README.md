@@ -49,13 +49,13 @@ This toolkit covers **government services** (tax, business registry, legal data,
 
 ### 🏛️ Government Services
 
-| Package                                                   | Description                                   | Type        | Auth     | Status     |
-| --------------------------------------------------------- | --------------------------------------------- | ----------- | -------- | ---------- |
-| [`@estonia-ai-kit/rik-mcp-server`](./mcp/rik)             | Estonian Business Register (RIK)              | MCP Server  | None     | 🔶 WIP     |
-| [`@estonia-ai-kit/open-data-mcp-server`](./mcp/open-data) | Statistics Estonia / Open Data Portal         | MCP Server  | None     | 🔶 WIP     |
-| [`cli/emta`](./cli/emta)                                  | Tax & Customs Board (EMTA) - TSD declarations | CLI / Skill | Smart-ID | ✅ Working |
-| [`rag/riigiteataja`](./rag/riigiteataja)                  | Estonian Legal Document RAG pipeline          | RAG         | None     | 🔶 WIP     |
-| [`@estonia-ai-kit/shared`](./packages/shared)             | Shared utilities and types                    | Library     | -        | ✅ Ready   |
+| Package                                                   | Description                                  | Type        | Auth     | Status     |
+| --------------------------------------------------------- | -------------------------------------------- | ----------- | -------- | ---------- |
+| [`@estonia-ai-kit/rik-mcp-server`](./mcp/rik)             | Estonian Business Register (RIK)             | MCP Server  | None     | 🔶 WIP     |
+| [`@estonia-ai-kit/open-data-mcp-server`](./mcp/open-data) | Statistics Estonia / Open Data Portal        | MCP Server  | None     | 🔶 WIP     |
+| [`cli/emta`](./cli/emta)                                  | Tax & Customs Board (EMTA) - TSD + KMD tools | CLI / Skill | Smart-ID | ✅ Working |
+| [`rag/riigiteataja`](./rag/riigiteataja)                  | Estonian Legal Document RAG pipeline         | RAG         | None     | 🔶 WIP     |
+| [`@estonia-ai-kit/shared`](./packages/shared)             | Shared utilities and types                   | Library     | -        | ✅ Ready   |
 
 ### 🏦 Private Sector Services
 
@@ -84,6 +84,8 @@ go install github.com/stefanoamorelli/estonia-ai-kit/cli/lhv@latest
 emta-cli login                     # Login via Smart-ID QR code
 emta-cli tsd list                  # List your TSD declarations
 emta-cli tsd show <declaration-id> # Show declaration details
+emta-cli kmd list                  # List KMD declarations
+emta-cli kmd main read --declaration-id <id>
 ```
 
 **LHV Bank**:

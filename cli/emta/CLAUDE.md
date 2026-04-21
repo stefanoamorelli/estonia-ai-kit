@@ -38,3 +38,5 @@ Get the declaration ID from `tsd list`.
 - Login is interactive (Smart-ID QR code) — ask the user to scan when running `login`
 - If you get "session expired", the user needs to run `login` again
 - Do not hardcode company/person names
+- KMD commands live under `emta-cli kmd ...`
+- `kmd submit` exists but should be treated as high-risk and only used when explicitly requested
