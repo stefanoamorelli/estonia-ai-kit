@@ -26,6 +26,23 @@ type Account struct {
 	Cards       []Account
 }
 
+type Balance struct {
+	Name      string
+	IBAN      string
+	Currency  string
+	ExchRate  string
+	Balance   string
+	Interest  string
+	Reserved  string
+	FreeFunds string
+}
+
+type BalanceSummary struct {
+	Accounts       []Balance
+	TotalBalance   string
+	TotalAvailable string
+}
+
 type UserEntry struct {
 	UserID   int64  `json:"userId"`
 	Name     string `json:"name"`
@@ -282,6 +299,96 @@ func (c *Client) GetAccounts() ([]Account, error) {
 	}
 
 	return accounts, nil
+}
+
+func (c *Client) GetBalances() (*BalanceSummary, error) {
+	endpoint := baseURL + "/portfolio/view.cfm?newframe=1&l3=en&vi=0&show_loan=0"
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("User-Agent", userAgent)
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
+	req.Header.Set("Referer", baseURL+"/ibank/cf/portfolio/view")
+	req.Header.Set("Cookie", c.config.BuildCookieHeader())
+
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	var reader io.Reader = resp.Body
+	if resp.Header.Get("Content-Encoding") == "gzip" {
+		gzReader, err := gzip.NewReader(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create gzip reader: %w", err)
+		}
+		defer gzReader.Close()
+		reader = gzReader
+	}
+
+	doc, err := goquery.NewDocumentFromReader(reader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse HTML: %w", err)
+	}
+
+	summary := &BalanceSummary{}
+	table := doc.Find("div#view_money table.grid").First()
+	if table.Length() == 0 {
+		return nil, fmt.Errorf("balance table not found")
+	}
+
+	table.Find("tbody tr").Each(func(i int, row *goquery.Selection) {
+		cells := row.ChildrenFiltered("td")
+		n := cells.Length()
+		if n < 6 {
+			return
+		}
+
+		b := Balance{
+			FreeFunds: strings.TrimSpace(cells.Eq(n - 1).Text()),
+			Reserved:  strings.TrimSpace(cells.Eq(n - 2).Text()),
+			Interest:  strings.TrimSpace(cells.Eq(n - 3).Text()),
+			Balance:   strings.TrimSpace(cells.Eq(n - 4).Text()),
+			ExchRate:  strings.TrimSpace(cells.Eq(n - 5).Text()),
+			Currency:  strings.TrimSpace(cells.Eq(n - 6).Text()),
+		}
+
+		nameText := ""
+		for j := 0; j <= n-7; j++ {
+			t := strings.TrimSpace(cells.Eq(j).Text())
+			if t != "" {
+				nameText = t
+			}
+		}
+		if strings.Contains(nameText, "•") {
+			parts := strings.SplitN(nameText, "•", 2)
+			b.Name = strings.TrimSpace(parts[0])
+			b.IBAN = strings.TrimSpace(parts[1])
+		} else {
+			b.Name = nameText
+		}
+
+		if b.Name == "" && b.Balance == "" && b.FreeFunds == "" {
+			return
+		}
+
+		summary.Accounts = append(summary.Accounts, b)
+	})
+
+	summary.TotalBalance = strings.TrimSpace(table.Find("tfoot .money-balance").Text())
+	summary.TotalAvailable = strings.TrimSpace(table.Find("tfoot .money-available").Text())
+
+	return summary, nil
 }
 
 func extractLast4Digits(text string) string {
