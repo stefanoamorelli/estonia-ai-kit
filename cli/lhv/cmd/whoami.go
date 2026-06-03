@@ -14,9 +14,8 @@ var whoamiCmd = &cobra.Command{
 	Short: "Show current authenticated user",
 	Long:  `Displays information about the currently authenticated LHV user.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		cfg := config.LoadOptional()
-
-		if !cfg.IsValid() {
+		cfg, err := config.Load()
+		if err != nil || !cfg.IsValid() {
 			red := color.New(color.FgRed)
 			red.Println("\n  ✗ Not authenticated")
 			fmt.Println()
