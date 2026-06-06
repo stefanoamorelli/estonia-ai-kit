@@ -41,7 +41,7 @@ The **DCO** check enforces this on every commit in your PR.
 
 ## 2. Contributor License Agreement (CLA)
 
-The DCO certifies *where the code came from*. The [CLA](./CLA.md) goes one step
+The DCO certifies _where the code came from_. The [CLA](./CLA.md) goes one step
 further: it grants the maintainer the rights needed to distribute, relicense,
 and commercialize the project (for example, to dual-license it). You keep the
 copyright to your contributions.
