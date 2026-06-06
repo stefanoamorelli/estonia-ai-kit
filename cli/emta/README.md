@@ -27,7 +27,7 @@ Or build from source:
 
 ```sh
 cd cli/emta
-go build -o emta-cli .
+go build -o emta .
 ```
 
 ## Usage
@@ -37,7 +37,7 @@ go build -o emta-cli .
 Authenticate via Smart-ID QR code. You'll be prompted to select a principal (company/person) after scanning.
 
 ```sh
-./emta-cli login
+./emta login
 ```
 
 Session is stored in the OS keychain (macOS Keychain, GNOME Keyring, Windows Credential Manager) and expires after ~30 minutes server-side.
@@ -45,20 +45,20 @@ Session is stored in the OS keychain (macOS Keychain, GNOME Keyring, Windows Cre
 To clear the saved session:
 
 ```sh
-./emta-cli logout
+./emta logout
 ```
 
 ### List TSD Declarations
 
 ```sh
-./emta-cli tsd list              # current year
-./emta-cli tsd list --year 2025  # specific year
+./emta tsd list              # current year
+./emta tsd list --year 2025  # specific year
 ```
 
 ### Show TSD Summary
 
 ```sh
-./emta-cli tsd show <declaration-id>
+./emta tsd show <declaration-id>
 ```
 
 Get the declaration ID from `tsd list`.

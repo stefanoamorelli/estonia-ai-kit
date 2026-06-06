@@ -3,7 +3,7 @@
 Claude Code plugin for interacting with the Estonian Tax and Customs Board (EMTA). Authenticate via Smart-ID QR code, list and view TSD (Income and Social Tax Return) declarations.
 
 > [!IMPORTANT]
-> This plugin is experimental and not affiliated with the Estonian Tax and Customs Board (EMTA) or any Estonian government institution. It requires the emta-cli binary to be built and available on your PATH.
+> This plugin is experimental and not affiliated with the Estonian Tax and Customs Board (EMTA) or any Estonian government institution. It requires the emta binary to be built and available on your PATH.
 
 ## Prerequisites
 
@@ -16,7 +16,7 @@ go install github.com/stefanoamorelli/estonia-ai-kit/cli/emta@latest
 # Option 2: build from source
 git clone https://github.com/stefanoamorelli/estonia-ai-kit.git
 cd estonia-ai-kit/cli/emta
-go build -o emta-cli .
+go build -o emta .
 ```
 
 Ensure the binary is on your PATH.

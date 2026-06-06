@@ -81,9 +81,9 @@ go install github.com/stefanoamorelli/estonia-ai-kit/cli/lhv@latest
 **EMTA** (Tax & Customs):
 
 ```bash
-emta-cli login                     # Login via Smart-ID QR code
-emta-cli tsd list                  # List your TSD declarations
-emta-cli tsd show <declaration-id> # Show declaration details
+emta login                     # Login via Smart-ID QR code
+emta tsd list                  # List your TSD declarations
+emta tsd show <declaration-id> # Show declaration details
 ```
 
 **LHV Bank**:
@@ -186,7 +186,7 @@ bun install
 bun run build
 
 # Go CLI tools
-cd cli/emta && go build -o emta-cli .
+cd cli/emta && go build -o emta .
 cd cli/lhv && make install
 ```
 
