@@ -1,6 +1,6 @@
 # EMTA CLI
 
-CLI for Estonian Tax and Customs Board (EMTA) e-services. Authenticates via Smart-ID QR code and provides access to TSD (Income and Social Tax Return) declarations.
+CLI for Estonian Tax and Customs Board (EMTA) e-services. Authenticates via Smart-ID QR code and provides access to TSD (Income and Social Tax Return) declarations plus KMD draft read/write tooling.
 
 > [!IMPORTANT]
 > **Unofficial, open source & experimental.** This is a community-driven project, part of [Estonia AI Kit](https://github.com/stefanoamorelli/estonia-ai-kit). It is not affiliated with, endorsed by, or connected to the Estonian Tax and Customs Board (EMTA) or any Estonian government institution. It relies on undocumented web interfaces (HTML parsing, internal redirect chains) that **can break at any time** without notice. Sessions expire after ~30 minutes. Use at your own risk. The authors accept no liability for any issues arising from its use.
@@ -62,6 +62,59 @@ To clear the saved session:
 ```
 
 Get the declaration ID from `tsd list`.
+
+### KMD
+
+List all KMD declarations:
+
+```sh
+./emta-cli kmd list
+```
+
+Read KMD main form:
+
+```sh
+./emta-cli kmd main read --declaration-id <id>
+```
+
+Update KMD main form from JSON:
+
+```sh
+./emta-cli kmd main update --declaration-id <id> --input main.json
+```
+
+Example input:
+
+```sh
+./examples/kmd-main.json
+```
+
+Read annex rows:
+
+```sh
+./emta-cli kmd inf-a read --declaration-id <id>
+./emta-cli kmd inf-b read --declaration-id <id>
+```
+
+Update annex rows from JSON:
+
+```sh
+./emta-cli kmd inf-a update --declaration-id <id> --input inf-a.json
+./emta-cli kmd inf-b update --declaration-id <id> --input inf-b.json
+```
+
+Example inputs:
+
+```sh
+./examples/kmd-inf-a.json
+./examples/kmd-inf-b.json
+```
+
+Submit saved KMD draft:
+
+```sh
+./emta-cli kmd submit --declaration-id <id> --confirm
+```
 
 ## How It Works
 

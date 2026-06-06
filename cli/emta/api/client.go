@@ -22,6 +22,13 @@ type Client struct {
 	initialized bool
 }
 
+type portalAccessTokenResponse struct {
+	AccessToken   string `json:"accessToken"`
+	ApplicationID string `json:"applicationId"`
+	SessionID     string `json:"sessionId"`
+	Role          string `json:"role"`
+}
+
 func NewClient(session *auth.Session) *Client {
 	return &Client{session: session}
 }
@@ -52,14 +59,14 @@ func (c *Client) ensureSession() error {
 	origRedirect := c.session.Client.CheckRedirect
 	c.session.Client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		reqURL := req.URL.String()
-		if strings.Contains(reqURL, "/wfm/client/principal") {
+		if strings.Contains(reqURL, "wfm/client/principal") {
 			wfmRedirect = true
 			if ru := req.URL.Query().Get("redirect_uri"); ru != "" {
 				redirectURI = ru
 			}
 			return http.ErrUseLastResponse
 		}
-		if strings.Contains(reqURL, "/v1/login") {
+		if strings.Contains(reqURL, "v1/login") {
 			return http.ErrUseLastResponse
 		}
 		if len(via) >= 20 {
@@ -147,9 +154,17 @@ func (c *Client) SetupTSDSession() error {
 	return c.ensureSession()
 }
 
+// SetupKMDSession establishes cookies for the KMD application.
+func (c *Client) SetupKMDSession() error {
+	return c.ensureKMDSession()
+}
+
 // FetchPrincipals lists available principals using the customer portal's
 // access token. This can be called right after login, before TSD session setup.
 func (c *Client) FetchPrincipals() ([]Principal, error) {
+	if err := c.refreshPortalSession(); err != nil {
+		return nil, err
+	}
 	req, err := http.NewRequest("GET", baseURL+"/wfm-api/client/v1/principals", nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating principals request: %w", err)
@@ -172,6 +187,51 @@ func (c *Client) FetchPrincipals() ([]Principal, error) {
 		return nil, fmt.Errorf("parsing principals: %w", err)
 	}
 	return principals, nil
+}
+
+func (c *Client) refreshPortalSession() error {
+	tokenURL := baseURL + "/customer-portal/client/access-token?returnUrl=" +
+		url.QueryEscape(baseURL+"/customer-portal/client")
+
+	req, err := http.NewRequest("GET", tokenURL, nil)
+	if err != nil {
+		return fmt.Errorf("creating portal token request: %w", err)
+	}
+	req.Header.Set("Accept", "application/json, text/plain, */*")
+
+	resp, err := c.session.Client.Do(req)
+	if err != nil {
+		return fmt.Errorf("refreshing portal session: %w", err)
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("reading portal token response: %w", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("portal session refresh failed (%d): %s", resp.StatusCode, string(data))
+	}
+
+	var tokenResp portalAccessTokenResponse
+	if err := json.Unmarshal(data, &tokenResp); err != nil {
+		return fmt.Errorf("parsing portal token response: %w", err)
+	}
+	if tokenResp.AccessToken == "" {
+		return fmt.Errorf("portal session refresh returned empty access token")
+	}
+
+	c.session.AccessToken = tokenResp.AccessToken
+	if tokenResp.ApplicationID != "" {
+		c.session.ApplicationID = tokenResp.ApplicationID
+	}
+	if tokenResp.SessionID != "" {
+		c.session.SessionID = tokenResp.SessionID
+	}
+	if tokenResp.Role != "" {
+		c.session.Role = tokenResp.Role
+	}
+	return nil
 }
 
 func (c *Client) setAuthHeaders(req *http.Request) {
