@@ -80,7 +80,7 @@ func (c *Client) ensureSession() error {
 	finalURL := resp.Request.URL.String()
 
 	if strings.Contains(finalURL, "/v1/login") {
-		return fmt.Errorf("session expired. Please run 'emta-cli login' again")
+		return fmt.Errorf("session expired. Please run 'emta login' again")
 	}
 
 	// Direct access worked
