@@ -1,0 +1,54 @@
+name: DCO
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dco-check:
+    name: Developer Certificate of Origin
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Verify Signed-off-by on every commit
+        run: |
+          # Every commit in the PR must carry a `Signed-off-by:` trailer
+          # (added with `git commit -s`), certifying the Developer
+          # Certificate of Origin 1.1 — https://developercertificate.org
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+
+          missing=0
+          while read -r sha; do
+            [ -z "$sha" ] && continue
+            if ! git show -s --format=%B "$sha" | grep -qiE '^Signed-off-by: .+ <.+@.+>'; then
+              subject=$(git show -s --format=%s "$sha")
+              echo "::error::Commit $sha is missing a Signed-off-by line: $subject"
+              missing=1
+            fi
+          done < <(git rev-list "$base".."$head")
+
+          if [ "$missing" -ne 0 ]; then
+            echo ""
+            echo "One or more commits are not signed off."
+            echo "Fix it by amending with sign-off:"
+            echo "    git commit --amend -s        # for the latest commit"
+            echo "    git rebase --signoff $base    # to sign off the whole branch"
+            echo "Then force-push your branch."
+            exit 1
+          fi
+
+          echo "All commits are signed off. ✅"
