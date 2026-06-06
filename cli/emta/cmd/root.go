@@ -20,7 +20,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "emta-cli",
+	Use:   "emta",
 	Short: "CLI for Estonian Tax and Customs Board (EMTA) e-services",
 }
 
@@ -47,6 +47,8 @@ type sessionFile struct {
 }
 
 const (
+	// keyringService keeps the "-cli" suffix (matching lhv's "lhv-cli") so existing
+	// stored sessions remain valid after the binary was renamed from emta-cli to emta.
 	keyringService = "emta-cli"
 	keyringUser    = "session"
 )
@@ -101,7 +103,7 @@ func saveSession(s *auth.Session) error {
 func loadSession() (*auth.Session, error) {
 	data, err := keyring.Get(keyringService, keyringUser)
 	if err != nil {
-		return nil, fmt.Errorf("not logged in. Run 'emta-cli login' first")
+		return nil, fmt.Errorf("not logged in. Run 'emta login' first")
 	}
 	var sf sessionFile
 	if err := json.Unmarshal([]byte(data), &sf); err != nil {
