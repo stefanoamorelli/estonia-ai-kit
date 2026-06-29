@@ -59,10 +59,24 @@ type Client struct {
 	config *config.Config
 }
 
+// noKeepAliveTransport returns an HTTP transport that opens a fresh connection
+// per request. LHV closes idle keep-alive connections after ~5s (it sends
+// `keep-alive: timeout=5` on /b/sign responses); Go will not transparently
+// retry a POST carrying a body on such a server-closed pooled connection, which
+// surfaced as a fatal `EOF` partway through Smart-ID signing while the user was
+// still confirming on their phone. Disabling connection reuse removes that race
+// at negligible cost for a CLI.
+func noKeepAliveTransport() *http.Transport {
+	t := http.DefaultTransport.(*http.Transport).Clone()
+	t.DisableKeepAlives = true
+	return t
+}
+
 func New(cfg *config.Config) *Client {
 	return &Client{
 		http: &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout:   30 * time.Second,
+			Transport: noKeepAliveTransport(),
 		},
 		config: cfg,
 	}
@@ -707,8 +721,9 @@ func NewAuthClient() *AuthClient {
 	jar, _ := cookiejar.New(nil)
 	return &AuthClient{
 		http: &http.Client{
-			Timeout: 30 * time.Second,
-			Jar:     jar,
+			Timeout:   30 * time.Second,
+			Transport: noKeepAliveTransport(),
+			Jar:       jar,
 		},
 	}
 }
