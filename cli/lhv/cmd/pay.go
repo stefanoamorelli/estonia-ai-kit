@@ -244,6 +244,13 @@ func pollSigningStatus(c *client.Client, orderKey string, signingSessionId strin
 	ticker := time.NewTicker(signingPollInterval)
 	defer ticker.Stop()
 
+	// A single poll can hit a dropped connection (EOF) while the user is still
+	// confirming on their phone, since LHV closes idle connections after ~5s.
+	// These transient errors are not fatal: keep polling until the signing
+	// times out, only giving up after several consecutive failures.
+	consecutiveErrs := 0
+	const maxConsecutiveErrs = 5
+
 	for {
 		select {
 		case <-timeout:
@@ -251,8 +258,14 @@ func pollSigningStatus(c *client.Client, orderKey string, signingSessionId strin
 		case <-ticker.C:
 			status, err := c.CheckSigningStatus(orderKey, signingSessionId)
 			if err != nil {
-				return "", err
+				consecutiveErrs++
+				if consecutiveErrs >= maxConsecutiveErrs {
+					return "", fmt.Errorf("signing status check failed %d times: %w", consecutiveErrs, err)
+				}
+				dim.Print(".")
+				continue
 			}
+			consecutiveErrs = 0
 
 			switch status.Status {
 			case "RUNNING":
